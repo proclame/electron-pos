@@ -41,7 +41,10 @@ class MigrationManager {
                     product_code TEXT UNIQUE NOT NULL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+                CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
             `);
             this.recordMigration('001_initial_schema');
         }
@@ -94,6 +97,43 @@ class MigrationManager {
                 );
             }
             this.recordMigration('002_seed_initial_products');
+        }
+
+        // Sales tables
+        if (!this.hasExecuted('003_create_sales_tables')) {
+            console.log('Executing migration: 003_create_sales_tables');
+            this.db.exec(`
+                CREATE TABLE IF NOT EXISTS sales (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    subtotal DECIMAL(10,2) NOT NULL,
+                    discount_amount DECIMAL(10,2) DEFAULT 0,
+                    total DECIMAL(10,2) NOT NULL,
+                    payment_method TEXT DEFAULT 'cash',
+                    needs_invoice BOOLEAN DEFAULT 0,
+                    notes TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS sale_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sale_id INTEGER NOT NULL,
+                    product_id INTEGER NOT NULL,
+                    quantity INTEGER NOT NULL,
+                    unit_price DECIMAL(10,2) NOT NULL,
+                    discount_percentage DECIMAL(5,2) DEFAULT 0,
+                    subtotal DECIMAL(10,2) NOT NULL,
+                    total DECIMAL(10,2) NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+                    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
+                CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
+                CREATE INDEX IF NOT EXISTS idx_sale_items_product_id ON sale_items(product_id);
+            `);
+            this.recordMigration('003_create_sales_tables');
         }
     }
 }

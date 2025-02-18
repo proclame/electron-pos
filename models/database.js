@@ -34,12 +34,8 @@ const initDatabase = async () => {
             ORDER BY name 
             LIMIT ? OFFSET ?
         `),
-        createIndexes: db.prepare(`
-            CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
-        `)
     };
 
-    statements.createIndexes.run();
     return statements;
 };
 
