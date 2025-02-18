@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 function App() {
   const [cart, setCart] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [total, setTotal] = useState(0);
+  const barcodeInputRef = useRef(null);
 
   // Sample products (we'll connect to backend later)
   const sampleProducts = [
@@ -12,9 +13,38 @@ function App() {
     { id: 3, name: 'Cookie', price: 1.50, barcode: '456789123' }
   ];
 
+  // Keep focus on barcode input
+  useEffect(() => {
+    barcodeInputRef.current?.focus();
+  }, []);
+
   const handleBarcodeSubmit = (e) => {
     e.preventDefault();
+    const product = sampleProducts.find(p => p.barcode === barcodeInput);
+    if (product) {
+      addToCart(product);
+    } else {
+      alert('Product not found!');
+    }
     setBarcodeInput('');
+    // Refocus input after submission
+    barcodeInputRef.current?.focus();
+  };
+
+  const handleBarcodeChange = (e) => {
+    setBarcodeInput(e.target.value);
+    // Auto-submit if barcode length matches expected length
+    if (e.target.value.length === 9) { // Length of our sample barcodes
+      const product = sampleProducts.find(p => p.barcode === e.target.value);
+      if (product) {
+        addToCart(product);
+        setBarcodeInput('');
+      } else {
+        alert('Product not found!');
+      }
+      // Refocus input after processing
+      barcodeInputRef.current?.focus();
+    }
   };
 
   const addToCart = (product) => {
@@ -34,12 +64,13 @@ function App() {
       <div style={styles.scannerSection}>
         <form onSubmit={handleBarcodeSubmit}>
           <input
+            ref={barcodeInputRef}
             type="text"
             value={barcodeInput}
-            onChange={(e) => setBarcodeInput(e.target.value)}
+            onChange={handleBarcodeChange}
             placeholder="Scan barcode..."
             style={styles.barcodeInput}
-            autoFocus
+            autoComplete="off"
           />
         </form>
       </div>
