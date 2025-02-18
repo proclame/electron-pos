@@ -4,6 +4,7 @@ const isDev = require('electron-is-dev');
 const express = require('express');
 const cors = require('cors');
 const { db, initDatabase } = require('../models/database');
+const csv = require('csv-parse');
 
 // Express setup
 const expressApp = express();
@@ -65,6 +66,44 @@ expressApp.put('/api/products/:id', (req, res) => {
     } catch (error) {
         console.error('Error updating product:', error);
         res.status(500).json({ message: 'Error updating product' });
+    }
+});
+
+expressApp.post('/api/products/import', (req, res) => {
+    try {
+        const { csvData } = req.body;
+        const records = [];
+        
+        csv.parse(csvData, {
+            columns: true,
+            skip_empty_lines: true
+        }, (err, data) => {
+            if (err) throw err;
+            
+            const importProducts = db.prepare(`
+                INSERT OR REPLACE INTO products (
+                    name, size, color, unit_price, barcode, product_code
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            `);
+
+            db.transaction(() => {
+                data.forEach(record => {
+                    importProducts.run(
+                        record.name,
+                        record.size || null,
+                        record.color || null,
+                        parseFloat(record.unit_price),
+                        record.barcode,
+                        record.product_code
+                    );
+                });
+            })();
+
+            res.json({ message: `Imported ${data.length} products` });
+        });
+    } catch (error) {
+        console.error('Error importing products:', error);
+        res.status(500).json({ message: 'Error importing products' });
     }
 });
 

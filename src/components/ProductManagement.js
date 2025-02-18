@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -12,6 +12,7 @@ function ProductManagement() {
     barcode: '',
     product_code: ''
   });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchProducts();
@@ -72,6 +73,36 @@ function ProductManagement() {
     }
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const response = await fetch('http://localhost:5001/api/products/import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ csvData: e.target.result })
+          });
+
+          if (response.ok) {
+            alert('Products imported successfully');
+            fetchProducts();
+          } else {
+            alert('Error importing products');
+          }
+        } catch (err) {
+          console.error('Error importing products:', err);
+          alert('Error importing products');
+        }
+        fileInputRef.current.value = '';
+      };
+      reader.readAsText(file);
+    }
+  };
+
   if (loading) {
     return <div style={styles.loading}>Loading products...</div>;
   }
@@ -80,6 +111,19 @@ function ProductManagement() {
     <div style={styles.container}>
       <h1>Product Management</h1>
       
+      <div style={styles.importSection}>
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleFileUpload}
+          ref={fileInputRef}
+          style={styles.fileInput}
+        />
+        <p style={styles.importHelp}>
+          CSV format: name,size,color,unit_price,barcode,product_code
+        </p>
+      </div>
+
       <div style={styles.productList}>
         <table style={styles.table}>
           <thead>
@@ -257,6 +301,26 @@ const styles = {
     padding: '20px',
     textAlign: 'center',
     fontSize: '1.2em'
+  },
+  importSection: {
+    marginBottom: '20px',
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '5px',
+    border: '1px solid #ddd'
+  },
+  importHelp: {
+    margin: '10px 0 0',
+    color: '#6c757d',
+    fontSize: '0.9em'
+  },
+  fileInput: {
+    display: 'block',
+    width: '100%',
+    padding: '8px',
+    backgroundColor: 'white',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
   }
 };
 
