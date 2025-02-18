@@ -23,17 +23,28 @@ function POSSystem() {
   const [barcodeInput, setBarcodeInput] = useState('');
   const [total, setTotal] = useState(0);
   const barcodeInputRef = useRef(null);
+  const [editingQuantity, setEditingQuantity] = useState(null);
+  const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
+  const suspendTimeoutRef = useRef(null);
+  const [quantityInputValue, setQuantityInputValue] = useState('');
 
-  // Keep focus on barcode input
   useEffect(() => {
-    barcodeInputRef.current?.focus();
-  }, []);
+    if (!isSuspendedBarcodeInput) {
+      barcodeInputRef.current?.focus();
+    }
+  }, [isSuspendedBarcodeInput]);
 
   const handleBarcodeBlur = () => {
-    // Small timeout to allow button clicks to work
-    setTimeout(() => {
-      barcodeInputRef.current?.focus();
-    }, 100);
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    
+    if (!isSuspendedBarcodeInput) {
+      suspendTimeoutRef.current = setTimeout(() => {
+        barcodeInputRef.current?.focus();
+        suspendTimeoutRef.current = null;
+      }, 100);
+    }
   };
 
   const handleBarcodeChange = (e) => {
@@ -48,9 +59,7 @@ function POSSystem() {
     }
   };
 
-  // New function to handle barcode submission with direct value
   const submitBarcode = async (barcode) => {
-
     try {
         const response = await fetch(`http://localhost:5001/api/products/barcode/${barcode}`);
         if (response.ok) {
@@ -141,9 +150,64 @@ function POSSystem() {
     }
   };
 
+  const handleQuantityUpdate = (index, newQuantity) => {
+    if (newQuantity < 1) return; // Prevent quantities less than 1
+    
+    setCart(currentCart => {
+      const item = currentCart[index];
+      const quantityDiff = newQuantity - item.quantity;
+      
+      return currentCart.map((cartItem, i) => 
+        i === index
+          ? { ...cartItem, quantity: newQuantity }
+          : cartItem
+      );
+    });
+
+    // Update total based on quantity difference
+    setTotal(prev => prev + (cart[index].product.unit_price * (newQuantity - cart[index].quantity)));
+    setEditingQuantity(null); // Exit edit mode
+  };
+
+  const startEditingQuantity = (index) => {
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    setIsSuspendedBarcodeInput(true);
+    setQuantityInputValue(cart[index].quantity.toString());
+    setEditingQuantity(index);
+  };
+
+  const finishEditingQuantity = (index, newQuantity) => {
+    if (newQuantity >= 1) {  // Only update if valid quantity
+      handleQuantityUpdate(index, newQuantity);
+    }
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    setQuantityInputValue('');
+    setIsSuspendedBarcodeInput(false);
+  };
+
+  const cancelEditingQuantity = () => {
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    setQuantityInputValue('');
+    setEditingQuantity(null);
+    setIsSuspendedBarcodeInput(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (suspendTimeoutRef.current) {
+        clearTimeout(suspendTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div style={styles.container}>
-      {/* Barcode Scanner Section */}
       <div style={styles.scannerSection}>
         <form onSubmit={handleBarcodeSubmit}>
           <input
@@ -160,14 +224,37 @@ function POSSystem() {
       </div>
 
       <div style={styles.mainContent}>
-        {/* Cart Section - make it full width */}
         <div style={styles.cartSection}>
           <h2>Current Cart</h2>
           <div style={styles.cartItems}>
             {cart.map((item, index) => (
               <div key={index} style={styles.cartItem}>
                 <span style={styles.cartItemName}>{item.product.name}</span>
-                <span style={styles.cartItemQuantity}>x{item.quantity}</span>
+                {editingQuantity === index ? (
+                  <input
+                    type="number"
+                    value={quantityInputValue}
+                    onChange={(e) => setQuantityInputValue(e.target.value)}
+                    onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
+                      } else if (e.key === 'Escape') {
+                        cancelEditingQuantity();
+                      }
+                    }}
+                    autoFocus
+                    style={styles.quantityInput}
+                    min="1"
+                  />
+                ) : (
+                  <span 
+                    style={styles.cartItemQuantity}
+                    onDoubleClick={() => startEditingQuantity(index)}
+                  >
+                    x{item.quantity}
+                  </span>
+                )}
                 <span style={styles.cartItemPrice}>
                   €{(item.product.unit_price * item.quantity).toFixed(2)}
                 </span>
@@ -230,7 +317,7 @@ const styles = {
     gap: '20px'
   },
   cartSection: {
-    flex: '1', // Take full width
+    flex: '1',
     padding: '20px',
     backgroundColor: 'white',
     borderRadius: '5px',
@@ -328,6 +415,14 @@ const styles = {
     textDecoration: 'none',
     color: '#007bff',
     fontWeight: 'bold'
+  },
+  quantityInput: {
+    width: '60px',
+    padding: '4px',
+    textAlign: 'center',
+    border: '1px solid #007bff',
+    borderRadius: '4px',
+    margin: '0 8px'
   }
 };
 
