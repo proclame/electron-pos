@@ -59,14 +59,41 @@ function App() {
   };
 
   const addToCart = (product) => {
-    setCart([...cart, product]);
+    setCart(currentCart => {
+      // Check if product is already in cart
+      const existingItem = currentCart.find(item => item.product.id === product.id);
+      
+      if (existingItem) {
+        // If product exists, increment quantity
+        return currentCart.map(item => 
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        // If product is new, add it with quantity 1
+        return [...currentCart, { product, quantity: 1 }];
+      }
+    });
     setTotal(prev => prev + product.price);
   };
 
   const removeFromCart = (index) => {
-    const newCart = cart.filter((_, i) => i !== index);
-    setTotal(prev => prev - cart[index].price);
-    setCart(newCart);
+    setCart(currentCart => {
+      const item = currentCart[index];
+      if (item.quantity > 1) {
+        // If quantity > 1, just decrease quantity
+        return currentCart.map((cartItem, i) => 
+          i === index
+            ? { ...cartItem, quantity: cartItem.quantity - 1 }
+            : cartItem
+        );
+      } else {
+        // If quantity is 1, remove the item
+        return currentCart.filter((_, i) => i !== index);
+      }
+    });
+    setTotal(prev => prev - cart[index].product.price);
   };
 
   if (loading) {
@@ -111,14 +138,17 @@ function App() {
           </div>
         </div>
 
-        {/* Cart Section */}
+        {/* Updated Cart Section */}
         <div style={styles.cartSection}>
           <h2>Current Cart</h2>
           <div style={styles.cartItems}>
             {cart.map((item, index) => (
               <div key={index} style={styles.cartItem}>
-                <span>{item.name}</span>
-                <span>${item.price.toFixed(2)}</span>
+                <span style={styles.cartItemName}>{item.product.name}</span>
+                <span style={styles.cartItemQuantity}>x{item.quantity}</span>
+                <span style={styles.cartItemPrice}>
+                  ${(item.product.price * item.quantity).toFixed(2)}
+                </span>
                 <button 
                   onClick={() => removeFromCart(index)}
                   style={styles.removeButton}
@@ -243,6 +273,23 @@ const styles = {
     padding: '20px',
     textAlign: 'center',
     fontSize: '1.2em'
+  },
+  cartItemName: {
+    flex: '2',
+    textAlign: 'left'
+  },
+  cartItemQuantity: {
+    flex: '1',
+    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    margin: '0 8px'
+  },
+  cartItemPrice: {
+    flex: '1',
+    textAlign: 'right',
+    marginRight: '8px'
   }
 };
 
