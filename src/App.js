@@ -27,6 +27,13 @@ function App() {
     barcodeInputRef.current?.focus();
   }, []);
 
+  const handleBarcodeBlur = () => {
+    // Small timeout to allow button clicks to work
+    setTimeout(() => {
+      barcodeInputRef.current?.focus();
+    }, 100);
+  };
+
   const handleBarcodeChange = (e) => {
     const value = e.target.value;
     setBarcodeInput(value);
@@ -75,7 +82,7 @@ function App() {
         return [...currentCart, { product, quantity: 1 }];
       }
     });
-    setTotal(prev => prev + product.price);
+    setTotal(prev => prev + product.unit_price);
   };
 
   const removeFromCart = (index) => {
@@ -93,7 +100,13 @@ function App() {
         return currentCart.filter((_, i) => i !== index);
       }
     });
-    setTotal(prev => prev - cart[index].product.price);
+    setTotal(prev => prev - cart[index].product.unit_price);
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    setTotal(0);
+    barcodeInputRef.current?.focus();
   };
 
   if (loading) {
@@ -110,6 +123,7 @@ function App() {
             type="text"
             value={barcodeInput}
             onChange={handleBarcodeChange}
+            onBlur={handleBarcodeBlur}
             placeholder="Scan barcode..."
             style={styles.barcodeInput}
             autoComplete="off"
@@ -125,7 +139,7 @@ function App() {
             {products.map(product => (
               <div key={product.id} style={styles.productCard}>
                 <h3>{product.name}</h3>
-                <p>${product.price.toFixed(2)}</p>
+                <p>€{product.unit_price.toFixed(2)}</p>
                 <p style={styles.barcode}>Barcode: {product.barcode}</p>
                 <button 
                   onClick={() => addToCart(product)}
@@ -147,7 +161,7 @@ function App() {
                 <span style={styles.cartItemName}>{item.product.name}</span>
                 <span style={styles.cartItemQuantity}>x{item.quantity}</span>
                 <span style={styles.cartItemPrice}>
-                  ${(item.product.price * item.quantity).toFixed(2)}
+                  €{(item.product.unit_price * item.quantity).toFixed(2)}
                 </span>
                 <button 
                   onClick={() => removeFromCart(index)}
@@ -159,13 +173,22 @@ function App() {
             ))}
           </div>
           <div style={styles.total}>
-            <h3>Total: ${total.toFixed(2)}</h3>
-            <button 
-              style={styles.checkoutButton}
-              disabled={cart.length === 0}
-            >
-              Checkout
-            </button>
+            <h3>Total: €{total.toFixed(2)}</h3>
+            <div style={styles.cartButtons}>
+              <button 
+                onClick={clearCart}
+                style={styles.clearButton}
+                disabled={cart.length === 0}
+              >
+                Clear Cart
+              </button>
+              <button 
+                style={styles.checkoutButton}
+                disabled={cart.length === 0}
+              >
+                Checkout
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -290,6 +313,20 @@ const styles = {
     flex: '1',
     textAlign: 'right',
     marginRight: '8px'
+  },
+  cartButtons: {
+    display: 'flex',
+    gap: '10px',
+    justifyContent: 'flex-end',
+    marginTop: '10px'
+  },
+  clearButton: {
+    padding: '12px 24px',
+    backgroundColor: '#6c757d',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
   }
 };
 

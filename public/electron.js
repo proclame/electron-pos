@@ -3,18 +3,15 @@ const path = require('path');
 const isDev = require('electron-is-dev');
 const express = require('express');
 const cors = require('cors');
+const { db, initDatabase } = require('../models/database');
 
 // Express setup
 const expressApp = express();
 let server;
 const PORT = 5001;
 
-// Sample products data
-const products = [
-    { id: 1, name: 'Coffee', price: 2.50, barcode: '123456789' },
-    { id: 2, name: 'Sandwich', price: 5.99, barcode: '987654321' },
-    { id: 3, name: 'Cookie', price: 1.50, barcode: '456789123' }
-];
+// Initialize database and get prepared statements
+let dbStatements;
 
 // Middleware
 expressApp.use(cors());
@@ -22,30 +19,40 @@ expressApp.use(express.json());
 
 // API Routes
 expressApp.get('/api/products', (req, res) => {
-    res.json(products);
-});
-
-expressApp.get('/api/products/barcode/:barcode', (req, res) => {
-    const product = products.find(p => p.barcode === req.params.barcode);
-    if (product) {
-        res.json(product);
-    } else {
-        res.status(404).json({ message: 'Product not found' });
+    try {
+        const products = dbStatements.getAllProducts.all();
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Error fetching products' });
     }
 });
 
-function startServer() {
-    return new Promise((resolve, reject) => {
-        try {
-            server = expressApp.listen(PORT, () => {
-                console.log(`Express server running on port ${PORT}`);
-                resolve();
-            });
-        } catch (error) {
-            console.error('Failed to start server:', error);
-            reject(error);
+expressApp.get('/api/products/barcode/:barcode', (req, res) => {
+    try {
+        const product = dbStatements.getProductByBarcode.get(req.params.barcode);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).json({ message: 'Product not found' });
         }
-    });
+    } catch (error) {
+        console.error('Error finding product:', error);
+        res.status(500).json({ message: 'Error finding product' });
+    }
+});
+
+// Initialize database before starting the server
+async function startServer() {
+    try {
+        dbStatements = await initDatabase();
+        server = expressApp.listen(PORT, () => {
+            console.log(`Express server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        throw error;
+    }
 }
 
 let mainWindow;
