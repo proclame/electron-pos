@@ -76,44 +76,56 @@ function POSSystem() {
     barcodeInputRef.current?.focus();
   };
 
+  // Add helper function to calculate total
+  const calculateTotal = (cartItems) => {
+    return cartItems.reduce((sum, item) => 
+      sum + (item.product.unit_price * item.quantity), 0
+    );
+  };
+
+  // Update addToCart
   const addToCart = (product) => {
     setCart(currentCart => {
-      // Check if product is already in cart
-      const existingItem = currentCart.find(item => item.product.id === product.id);
+      const newCart = [...currentCart];
+      const existingItem = newCart.find(item => item.product.id === product.id);
       
       if (existingItem) {
-        // If product exists, increment quantity
-        return currentCart.map(item => 
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        existingItem.quantity += 1;
       } else {
-        // If product is new, add it with quantity 1
-        return [...currentCart, { product, quantity: 1 }];
+        newCart.push({ product, quantity: 1 });
       }
+
+      setTotal(calculateTotal(newCart));
+      return newCart;
     });
-    setTotal(prev => prev + product.unit_price);
   };
 
+  // Update removeFromCart
   const removeFromCart = (index) => {
     setCart(currentCart => {
-      const item = currentCart[index];
-      if (item.quantity > 1) {
-        // If quantity > 1, just decrease quantity
-        return currentCart.map((cartItem, i) => 
-          i === index
-            ? { ...cartItem, quantity: cartItem.quantity - 1 }
-            : cartItem
-        );
-      } else {
-        // If quantity is 1, remove the item
-        return currentCart.filter((_, i) => i !== index);
-      }
+      const newCart = currentCart.filter((_, i) => i !== index);
+      setTotal(calculateTotal(newCart));
+      return newCart;
     });
-    setTotal(prev => prev - cart[index].product.unit_price);
   };
 
+  // Update handleQuantityUpdate
+  const handleQuantityUpdate = (index, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    setCart(currentCart => {
+      const newCart = currentCart.map((item, i) => 
+        i === index
+          ? { ...item, quantity: newQuantity }
+          : item
+      );
+      setTotal(calculateTotal(newCart));
+      return newCart;
+    });
+    setEditingQuantity(null);
+  };
+
+  // Update clearCart
   const clearCart = () => {
     setCart([]);
     setTotal(0);
@@ -148,25 +160,6 @@ function POSSystem() {
       console.error('Error during checkout:', err);
       alert('Error completing sale');
     }
-  };
-
-  const handleQuantityUpdate = (index, newQuantity) => {
-    if (newQuantity < 1) return; // Prevent quantities less than 1
-    
-    setCart(currentCart => {
-      const item = currentCart[index];
-      const quantityDiff = newQuantity - item.quantity;
-      
-      return currentCart.map((cartItem, i) => 
-        i === index
-          ? { ...cartItem, quantity: newQuantity }
-          : cartItem
-      );
-    });
-
-    // Update total based on quantity difference
-    setTotal(prev => prev + (cart[index].product.unit_price * (newQuantity - cart[index].quantity)));
-    setEditingQuantity(null); // Exit edit mode
   };
 
   const startEditingQuantity = (index) => {
