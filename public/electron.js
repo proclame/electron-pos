@@ -124,6 +124,46 @@ expressApp.post('/api/products/import', (req, res) => {
     }
 });
 
+// Add new endpoint for creating sales
+expressApp.post('/api/sales', (req, res) => {
+    try {
+        const { items, subtotal, discount_amount = 0, total, payment_method = 'cash', needs_invoice = false } = req.body;
+
+        const result = db.transaction(() => {
+            // Create the sale - convert boolean to integer
+            const saleResult = dbStatements.createSale.run(
+                subtotal,
+                discount_amount,
+                total,
+                payment_method,
+                needs_invoice ? 1 : 0  // Convert boolean to 0/1
+            );
+            
+            const saleId = saleResult.lastInsertRowid;
+
+            // Create sale items
+            for (const item of items) {
+                dbStatements.createSaleItem.run(
+                    saleId,
+                    item.product.id,
+                    item.quantity,
+                    item.product.unit_price,
+                    item.discount_percentage || 0,
+                    item.product.unit_price * item.quantity,
+                    (item.product.unit_price * item.quantity) * (1 - (item.discount_percentage || 0) / 100)
+                );
+            }
+
+            return saleId;
+        })();
+
+        res.json({ id: result, message: 'Sale created successfully' });
+    } catch (error) {
+        console.error('Error creating sale:', error);
+        res.status(500).json({ message: 'Error creating sale' });
+    }
+});
+
 // Initialize database before starting the server
 async function startServer() {
     try {

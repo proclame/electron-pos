@@ -34,6 +34,16 @@ const initDatabase = async () => {
             ORDER BY name 
             LIMIT ? OFFSET ?
         `),
+        createSale: db.prepare(`
+            INSERT INTO sales (subtotal, discount_amount, total, payment_method, needs_invoice)
+            VALUES (?, ?, ?, ?, ?)
+        `),
+        createSaleItem: db.prepare(`
+            INSERT INTO sale_items (
+                sale_id, product_id, quantity, unit_price, 
+                discount_percentage, subtotal, total
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `)
     };
 
     return statements;

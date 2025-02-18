@@ -111,6 +111,36 @@ function POSSystem() {
     barcodeInputRef.current?.focus();
   };
 
+  const handleCheckout = async () => {
+    try {
+      const saleData = {
+        items: cart,
+        subtotal: total,
+        total: total, // For now, no sale-level discount
+        payment_method: 'cash',
+        needs_invoice: false
+      };
+
+      const response = await fetch('http://localhost:5001/api/sales', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(saleData)
+      });
+
+      if (response.ok) {
+        alert('Sale completed successfully!');
+        clearCart();
+      } else {
+        alert('Error completing sale');
+      }
+    } catch (err) {
+      console.error('Error during checkout:', err);
+      alert('Error completing sale');
+    }
+  };
+
   return (
     <div style={styles.container}>
       {/* Barcode Scanner Section */}
@@ -161,6 +191,7 @@ function POSSystem() {
                 Clear Cart
               </button>
               <button 
+                onClick={handleCheckout}
                 style={styles.checkoutButton}
                 disabled={cart.length === 0}
               >
