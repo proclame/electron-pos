@@ -1,6 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import ProductManagement from './components/ProductManagement';
 
 function App() {
+  return (
+    <Router>
+      <div style={styles.nav}>
+        <Link to="/" style={styles.navLink}>POS</Link>
+        <Link to="/products" style={styles.navLink}>Products</Link>
+      </div>
+      
+      <Routes>
+        <Route path="/" element={<POSSystem />} />
+        <Route path="/products" element={<ProductManagement />} />
+      </Routes>
+    </Router>
+  );
+}
+
+function POSSystem() {
   const [cart, setCart] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [total, setTotal] = useState(0);
@@ -327,6 +345,17 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer'
+  },
+  nav: {
+    backgroundColor: '#f8f9fa',
+    padding: '10px 20px',
+    marginBottom: '20px'
+  },
+  navLink: {
+    marginRight: '20px',
+    textDecoration: 'none',
+    color: '#007bff',
+    fontWeight: 'bold'
   }
 };
 

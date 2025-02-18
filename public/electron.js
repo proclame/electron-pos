@@ -42,6 +42,32 @@ expressApp.get('/api/products/barcode/:barcode', (req, res) => {
     }
 });
 
+expressApp.put('/api/products/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, size, color, unit_price, barcode, product_code } = req.body;
+        
+        const updateProduct = dbStatements.updateProduct.run(
+            name,
+            size,
+            color,
+            unit_price,
+            barcode,
+            product_code,
+            id
+        );
+
+        if (updateProduct.changes > 0) {
+            res.json({ message: 'Product updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Product not found' });
+        }
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({ message: 'Error updating product' });
+    }
+});
+
 // Initialize database before starting the server
 async function startServer() {
     try {

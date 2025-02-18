@@ -21,6 +21,13 @@ const initDatabase = async () => {
                 name, size, color, 
                 unit_price, barcode, product_code
             ) VALUES (?, ?, ?, ?, ?, ?)
+        `),
+        updateProduct: db.prepare(`
+            UPDATE products 
+            SET name = ?, size = ?, color = ?, 
+                unit_price = ?, barcode = ?, product_code = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
         `)
     };
 
