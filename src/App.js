@@ -4,47 +4,58 @@ function App() {
   const [cart, setCart] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [total, setTotal] = useState(0);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const barcodeInputRef = useRef(null);
 
-  // Sample products (we'll connect to backend later)
-  const sampleProducts = [
-    { id: 1, name: 'Coffee', price: 2.50, barcode: '123456789' },
-    { id: 2, name: 'Sandwich', price: 5.99, barcode: '987654321' },
-    { id: 3, name: 'Cookie', price: 1.50, barcode: '456789123' }
-  ];
+  // Fetch products when component mounts
+  useEffect(() => {
+    fetch('http://localhost:5001/api/products')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching products:', err);
+        setLoading(false);
+      });
+  }, []);
 
   // Keep focus on barcode input
   useEffect(() => {
     barcodeInputRef.current?.focus();
   }, []);
 
-  const handleBarcodeSubmit = (e) => {
-    e.preventDefault();
-    const product = sampleProducts.find(p => p.barcode === barcodeInput);
-    if (product) {
-      addToCart(product);
-    } else {
-      alert('Product not found!');
-    }
-    setBarcodeInput('');
-    // Refocus input after submission
-    barcodeInputRef.current?.focus();
+  const handleBarcodeChange = (e) => {
+    const value = e.target.value;
+    setBarcodeInput(value);
   };
 
-  const handleBarcodeChange = (e) => {
-    setBarcodeInput(e.target.value);
-    // Auto-submit if barcode length matches expected length
-    if (e.target.value.length === 9) { // Length of our sample barcodes
-      const product = sampleProducts.find(p => p.barcode === e.target.value);
-      if (product) {
-        addToCart(product);
-        setBarcodeInput('');
-      } else {
-        alert('Product not found!');
-      }
-      // Refocus input after processing
-      barcodeInputRef.current?.focus();
+  const handleBarcodeSubmit = (e) => {
+    e.preventDefault();
+    if (barcodeInput.trim()) {  // Only submit if there's a barcode
+        submitBarcode(barcodeInput);
     }
+  };
+
+  // New function to handle barcode submission with direct value
+  const submitBarcode = async (barcode) => {
+
+    try {
+        const response = await fetch(`http://localhost:5001/api/products/barcode/${barcode}`);
+        if (response.ok) {
+            const product = await response.json();
+            addToCart(product);
+        } else {
+            alert('Product not found!');
+        }
+    } catch (err) {
+        console.error('Error finding product:', err);
+        alert('Error searching for product');
+    }
+    setBarcodeInput('');
+    barcodeInputRef.current?.focus();
   };
 
   const addToCart = (product) => {
@@ -57,6 +68,10 @@ function App() {
     setTotal(prev => prev - cart[index].price);
     setCart(newCart);
   };
+
+  if (loading) {
+    return <div style={styles.loading}>Loading products...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -80,7 +95,7 @@ function App() {
         <div style={styles.productsSection}>
           <h2>Products</h2>
           <div style={styles.productsGrid}>
-            {sampleProducts.map(product => (
+            {products.map(product => (
               <div key={product.id} style={styles.productCard}>
                 <h3>{product.name}</h3>
                 <p>${product.price.toFixed(2)}</p>
@@ -223,6 +238,11 @@ const styles = {
     padding: '4px',
     borderRadius: '4px',
     margin: '5px 0'
+  },
+  loading: {
+    padding: '20px',
+    textAlign: 'center',
+    fontSize: '1.2em'
   }
 };
 

@@ -9,13 +9,29 @@ const expressApp = express();
 let server;
 const PORT = 5001;
 
+// Sample products data
+const products = [
+    { id: 1, name: 'Coffee', price: 2.50, barcode: '123456789' },
+    { id: 2, name: 'Sandwich', price: 5.99, barcode: '987654321' },
+    { id: 3, name: 'Cookie', price: 1.50, barcode: '456789123' }
+];
+
 // Middleware
 expressApp.use(cors());
 expressApp.use(express.json());
 
-// Basic test endpoint
-expressApp.get('/api/hello', (req, res) => {
-    res.json({ message: 'Hello from Express!' });
+// API Routes
+expressApp.get('/api/products', (req, res) => {
+    res.json(products);
+});
+
+expressApp.get('/api/products/barcode/:barcode', (req, res) => {
+    const product = products.find(p => p.barcode === req.params.barcode);
+    if (product) {
+        res.json(product);
+    } else {
+        res.status(404).json({ message: 'Product not found' });
+    }
 });
 
 function startServer() {
