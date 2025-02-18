@@ -1,0 +1,4 @@
+name,size,color,unit_price,barcode,product_code
+Coffee 456,12oz,Dark Brown,3.5,123456789,COF001
+Sandwich,Regular,,5.99,987654321,SAN001
+Cookie,Large,Golden Brown,1.50,456789123,COK001

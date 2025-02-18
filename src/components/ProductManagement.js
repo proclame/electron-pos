@@ -13,16 +13,20 @@ function ProductManagement() {
     product_code: ''
   });
   const fileInputRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [page]);
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/products');
+      const response = await fetch(`http://localhost:5001/api/products?page=${page}&pageSize=${pageSize}`);
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products);
+      setTotalProducts(data.total);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -236,6 +240,24 @@ function ProductManagement() {
           </form>
         </div>
       )}
+
+      <div style={styles.pagination}>
+        <button 
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+          style={styles.paginationButton}
+        >
+          Previous
+        </button>
+        <span>Page {page} of {Math.ceil(totalProducts / pageSize)}</span>
+        <button 
+          onClick={() => setPage(p => p + 1)}
+          disabled={page >= Math.ceil(totalProducts / pageSize)}
+          style={styles.paginationButton}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
@@ -321,6 +343,20 @@ const styles = {
     backgroundColor: 'white',
     border: '1px solid #ddd',
     borderRadius: '4px'
+  },
+  pagination: {
+    marginTop: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '10px'
+  },
+  paginationButton: {
+    padding: '8px 16px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
   }
 };
 

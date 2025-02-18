@@ -28,9 +28,18 @@ const initDatabase = async () => {
                 unit_price = ?, barcode = ?, product_code = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
+        `),
+        getProductsPaginated: db.prepare(`
+            SELECT * FROM products 
+            ORDER BY name 
+            LIMIT ? OFFSET ?
+        `),
+        createIndexes: db.prepare(`
+            CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
         `)
     };
 
+    statements.createIndexes.run();
     return statements;
 };
 

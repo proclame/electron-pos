@@ -16,13 +16,26 @@ let dbStatements;
 
 // Middleware
 expressApp.use(cors());
-expressApp.use(express.json());
+expressApp.use(express.json({ limit: '10mb' }));
 
 // API Routes
 expressApp.get('/api/products', (req, res) => {
     try {
-        const products = dbStatements.getAllProducts.all();
-        res.json(products);
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 50;
+        const offset = (page - 1) * pageSize;
+
+        const countStatement = db.prepare('SELECT COUNT(*) as total FROM products');
+        const total = countStatement.get().total;
+
+        const products = dbStatements.getProductsPaginated.all(pageSize, offset);
+        
+        res.json({
+            products,
+            total,
+            page,
+            pageSize
+        });
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ message: 'Error fetching products' });
@@ -72,7 +85,6 @@ expressApp.put('/api/products/:id', (req, res) => {
 expressApp.post('/api/products/import', (req, res) => {
     try {
         const { csvData } = req.body;
-        const records = [];
         
         csv.parse(csvData, {
             columns: true,
@@ -80,14 +92,16 @@ expressApp.post('/api/products/import', (req, res) => {
         }, (err, data) => {
             if (err) throw err;
             
+            // Use a prepared statement for better performance
             const importProducts = db.prepare(`
                 INSERT OR REPLACE INTO products (
                     name, size, color, unit_price, barcode, product_code
                 ) VALUES (?, ?, ?, ?, ?, ?)
             `);
 
-            db.transaction(() => {
-                data.forEach(record => {
+            // Use a single transaction for all inserts
+            const importMany = db.transaction((products) => {
+                for (const record of products) {
                     importProducts.run(
                         record.name,
                         record.size || null,
@@ -96,8 +110,11 @@ expressApp.post('/api/products/import', (req, res) => {
                         record.barcode,
                         record.product_code
                     );
-                });
-            })();
+                }
+            });
+
+            // Execute all inserts in one transaction
+            importMany(data);
 
             res.json({ message: `Imported ${data.length} products` });
         });
