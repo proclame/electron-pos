@@ -27,6 +27,8 @@ function POSSystem() {
   const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
   const suspendTimeoutRef = useRef(null);
   const [quantityInputValue, setQuantityInputValue] = useState('');
+  const [notes, setNotes] = useState('');
+  const [needsInvoice, setNeedsInvoice] = useState(false);
 
   useEffect(() => {
     if (!isSuspendedBarcodeInput) {
@@ -137,9 +139,10 @@ function POSSystem() {
       const saleData = {
         items: cart,
         subtotal: total,
-        total: total, // For now, no sale-level discount
+        total: total,
         payment_method: 'cash',
-        needs_invoice: false
+        needs_invoice: needsInvoice,
+        notes: notes.trim()
       };
 
       const response = await fetch('http://localhost:5001/api/sales', {
@@ -153,6 +156,8 @@ function POSSystem() {
       if (response.ok) {
         alert('Sale completed successfully!');
         clearCart();
+        setNotes('');
+        setNeedsInvoice(false);
       } else {
         alert('Error completing sale');
       }
@@ -188,6 +193,21 @@ function POSSystem() {
     }
     setQuantityInputValue('');
     setEditingQuantity(null);
+    setIsSuspendedBarcodeInput(false);
+  };
+
+  // Add handlers for notes focus
+  const handleNotesFieldFocus = () => {
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    setIsSuspendedBarcodeInput(true);
+  };
+
+  const handleNotesFieldBlur = () => {
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
     setIsSuspendedBarcodeInput(false);
   };
 
@@ -262,6 +282,27 @@ function POSSystem() {
           </div>
           <div style={styles.total}>
             <h3>Total: €{total.toFixed(2)}</h3>
+            <div style={styles.checkoutFields}>
+              <div style={styles.invoiceField}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={needsInvoice}
+                    onChange={(e) => setNeedsInvoice(e.target.checked)}
+                    style={styles.checkbox}
+                  />
+                  Invoice needed
+                </label>
+              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onFocus={handleNotesFieldFocus}
+                onBlur={handleNotesFieldBlur}
+                placeholder="Add notes..."
+                style={styles.notesField}
+              />
+            </div>
             <div style={styles.cartButtons}>
               <button 
                 onClick={clearCart}
@@ -416,6 +457,25 @@ const styles = {
     border: '1px solid #007bff',
     borderRadius: '4px',
     margin: '0 8px'
+  },
+  checkoutFields: {
+    marginTop: '10px',
+    marginBottom: '15px',
+    textAlign: 'left'
+  },
+  invoiceField: {
+    marginBottom: '10px'
+  },
+  checkbox: {
+    marginRight: '8px'
+  },
+  notesField: {
+    width: '100%',
+    minHeight: '60px',
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    resize: 'vertical'
   }
 };
 

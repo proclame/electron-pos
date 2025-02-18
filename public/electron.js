@@ -127,16 +127,17 @@ expressApp.post('/api/products/import', (req, res) => {
 // Add new endpoint for creating sales
 expressApp.post('/api/sales', (req, res) => {
     try {
-        const { items, subtotal, discount_amount = 0, total, payment_method = 'cash', needs_invoice = false } = req.body;
+        const { items, subtotal, discount_amount = 0, total, payment_method = 'cash', needs_invoice = false, notes = '' } = req.body;
 
         const result = db.transaction(() => {
-            // Create the sale - convert boolean to integer
+            // Create the sale
             const saleResult = dbStatements.createSale.run(
                 subtotal,
                 discount_amount,
                 total,
                 payment_method,
-                needs_invoice ? 1 : 0  // Convert boolean to 0/1
+                needs_invoice ? 1 : 0,
+                notes  // Add notes to the insert
             );
             
             const saleId = saleResult.lastInsertRowid;

@@ -35,8 +35,10 @@ const initDatabase = async () => {
             LIMIT ? OFFSET ?
         `),
         createSale: db.prepare(`
-            INSERT INTO sales (subtotal, discount_amount, total, payment_method, needs_invoice)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO sales (
+                subtotal, discount_amount, total, 
+                payment_method, needs_invoice, notes
+            ) VALUES (?, ?, ?, ?, ?, ?)
         `),
         createSaleItem: db.prepare(`
             INSERT INTO sale_items (
