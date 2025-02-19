@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
+import Settings from './components/Settings';
 
 function App() {
   return (
@@ -8,11 +9,13 @@ function App() {
       <div style={styles.nav}>
         <Link to="/" style={styles.navLink}>POS</Link>
         <Link to="/products" style={styles.navLink}>Products</Link>
+        <Link to="/settings" style={styles.navLink}>Settings</Link>
       </div>
       
       <Routes>
         <Route path="/" element={<POSSystem />} />
         <Route path="/products" element={<ProductManagement />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
   );

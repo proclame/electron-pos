@@ -107,10 +107,7 @@ class PrinterService {
                 deviceName: this.printerName,
                 color: false,
                 margins: { marginType: 'printableArea' },
-                
-                header: "test",
-                footer: "test",
-                 mediaSize: {
+                mediaSize: {
                     name: 'CUSTOM',
                     width_microns: 80000,
                     height_microns: 200000,

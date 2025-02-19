@@ -189,6 +189,41 @@ expressApp.post('/api/print/receipt', async (req, res) => {
     }
 });
 
+expressApp.get('/api/settings', (req, res) => {
+    try {
+        const settings = db.prepare('SELECT * FROM settings WHERE id = 1').get();
+        res.json(settings);
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).json({ message: 'Error fetching settings' });
+    }
+});
+
+expressApp.put('/api/settings', (req, res) => {
+    try {
+        const { vat_number, vat_percentage, company_name, company_address, currency_symbol } = req.body;
+        
+        const result = db.prepare(`
+            UPDATE settings 
+            SET vat_number = ?, 
+                vat_percentage = ?, 
+                company_name = ?, 
+                company_address = ?, 
+                currency_symbol = ?
+            WHERE id = 1
+        `).run(vat_number, vat_percentage, company_name, company_address, currency_symbol);
+
+        if (result.changes > 0) {
+            res.json({ message: 'Settings updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Settings not found' });
+        }
+    } catch (error) {
+        console.error('Error updating settings:', error);
+        res.status(500).json({ message: 'Error updating settings' });
+    }
+});
+
 // Initialize database before starting the server
 async function startServer() {
     try {
