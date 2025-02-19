@@ -1,12 +1,25 @@
 const os = require('os');
 const { BrowserWindow } = require('electron');
 const { PosPrinter } = require('electron-pos-printer');
+const { db } = require('../models/database');
 
 class PrinterService {
     constructor() {
         this.platform = os.platform();
         this.window = null;
         this.printerName = null;
+        this.settings = null;
+    }
+
+    async getSettings() {
+        if (!this.settings) {
+            const settings = db.prepare('SELECT key, value FROM settings').all();
+            this.settings = settings.reduce((obj, item) => {
+                obj[item.key] = item.value;
+                return obj;
+            }, {});
+        }
+        return this.settings;
     }
 
     async printReceipt(sale) {
@@ -87,6 +100,9 @@ class PrinterService {
                 throw new Error('Star printer not found');
             }
 
+            // Fetch settings before generating receipt
+            this.settings = await this.getSettings();
+
             let theWindow = new BrowserWindow({
                 width: 300,
                 height: 800,
@@ -130,6 +146,13 @@ class PrinterService {
     }
 
     generateReceiptHTML(sale) {
+        const settings = this.settings || {
+            company_name: 'Your Company Name',
+            company_address: '',
+            vat_number: '',
+            currency_symbol: '€'
+        };
+
         return `
             <!DOCTYPE html>
             <html>
@@ -137,7 +160,7 @@ class PrinterService {
                 <style>
                     body {
                         font-family: 'Arial', sans-serif;
-                        width: 80mm; /* Standard thermal paper width */
+                        width: 80mm;
                         margin: 0;
                         padding: 5mm;
                         font-size: 12px;
@@ -162,8 +185,13 @@ class PrinterService {
                 </style>
             </head>
             <body>
-                <div class="center bold">YOUR STORE NAME</div>
-                <div class="center">123 Your Street</div>
+                <div class="center bold">${settings.company_name}</div>
+                ${settings.company_address ? `
+                    <div class="center">${settings.company_address.split('\n').join('<br/>')}</div>
+                ` : ''}
+                ${settings.vat_number ? `
+                    <div class="center">VAT: ${settings.vat_number}</div>
+                ` : ''}
                 <div class="divider"></div>
                 <div>Receipt #: ${sale.id}</div>
                 <div>Date: ${new Date().toLocaleString()}</div>
@@ -179,13 +207,23 @@ class PrinterService {
                         <tr>
                             <td>${item.product.name}</td>
                             <td>${item.quantity}</td>
-                            <td>€${item.product.unit_price.toFixed(2)}</td>
-                            <td>€${(item.quantity * item.product.unit_price).toFixed(2)}</td>
+                            <td>${settings.currency_symbol}${item.product.unit_price.toFixed(2)}</td>
+                            <td>${settings.currency_symbol}${(item.quantity * item.product.unit_price).toFixed(2)}</td>
                         </tr>
                     `).join('')}
                 </table>
                 <div class="divider"></div>
-                <div class="right">Total: €${sale.total.toFixed(2)}</div>
+                <div class="right">Subtotal: ${settings.currency_symbol}${sale.subtotal.toFixed(2)}</div>
+                ${sale.discount_amount > 0 ? `
+                    <div class="right">Discount: ${settings.currency_symbol}${sale.discount_amount.toFixed(2)}</div>
+                ` : ''}
+                <div class="right bold">TOTAL: ${settings.currency_symbol}${sale.total.toFixed(2)}</div>
+                ${settings.vat_percentage ? `
+                    <div class="right">Incl. VAT (${settings.vat_percentage}%): 
+                        ${settings.currency_symbol}${(sale.total * (parseFloat(settings.vat_percentage) / (100 + parseFloat(settings.vat_percentage)))).toFixed(2)}
+                    </div>
+                ` : ''}
+                <div class="divider"></div>
                 ${sale.notes ? `
                     <div class="center">Notes: ${sale.notes}</div>
                     <div class="divider"></div>
