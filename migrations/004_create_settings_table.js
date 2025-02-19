@@ -1,17 +1,11 @@
 const createSettingsTable = `
     CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY,
-        vat_number TEXT,
-        vat_percentage REAL NOT NULL DEFAULT 21.0,
-        company_name TEXT NOT NULL,
-        company_address TEXT,
-        currency_symbol TEXT NOT NULL DEFAULT '€',
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT NOT NULL UNIQUE,
+        value TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
-
-    -- Ensure we always have one settings row
-    INSERT OR IGNORE INTO settings (id, company_name) VALUES (1, 'Your Company Name');
 
     -- Add trigger to update the updated_at timestamp
     CREATE TRIGGER IF NOT EXISTS settings_updated_at 
@@ -19,6 +13,14 @@ const createSettingsTable = `
     BEGIN
         UPDATE settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
     END;
+
+    -- Insert default settings
+    INSERT OR IGNORE INTO settings (key, value) VALUES 
+        ('vat_number', ''),
+        ('vat_percentage', '21.0'),
+        ('company_name', 'Your Company Name'),
+        ('company_address', ''),
+        ('currency_symbol', '€');
 `;
 
 module.exports = {

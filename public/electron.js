@@ -191,8 +191,13 @@ expressApp.post('/api/print/receipt', async (req, res) => {
 
 expressApp.get('/api/settings', (req, res) => {
     try {
-        const settings = db.prepare('SELECT * FROM settings WHERE id = 1').get();
-        res.json(settings);
+        const settings = db.prepare('SELECT key, value FROM settings').all();
+        // Convert array of key-value pairs to object
+        const settingsObject = settings.reduce((obj, item) => {
+            obj[item.key] = item.value;
+            return obj;
+        }, {});
+        res.json(settingsObject);
     } catch (error) {
         console.error('Error fetching settings:', error);
         res.status(500).json({ message: 'Error fetching settings' });
@@ -201,23 +206,26 @@ expressApp.get('/api/settings', (req, res) => {
 
 expressApp.put('/api/settings', (req, res) => {
     try {
-        const { vat_number, vat_percentage, company_name, company_address, currency_symbol } = req.body;
+        const settings = req.body;
         
-        const result = db.prepare(`
+        // Create the update statement once
+        const updateSetting = db.prepare(`
             UPDATE settings 
-            SET vat_number = ?, 
-                vat_percentage = ?, 
-                company_name = ?, 
-                company_address = ?, 
-                currency_symbol = ?
-            WHERE id = 1
-        `).run(vat_number, vat_percentage, company_name, company_address, currency_symbol);
+            SET value = ?
+            WHERE key = ?
+        `);
 
-        if (result.changes > 0) {
-            res.json({ message: 'Settings updated successfully' });
-        } else {
-            res.status(404).json({ message: 'Settings not found' });
-        }
+        // Use a transaction to update all settings
+        const updateMany = db.transaction((settings) => {
+            Object.entries(settings).forEach(([key, value]) => {
+                updateSetting.run(value.toString(), key);
+            });
+        });
+
+        // Execute the transaction
+        updateMany(settings);
+        
+        res.json({ message: 'Settings updated successfully' });
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ message: 'Error updating settings' });
