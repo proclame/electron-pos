@@ -6,7 +6,8 @@ function Settings() {
         vat_percentage: 21.0,
         company_name: '',
         company_address: '',
-        currency_symbol: '€'
+        currency_symbol: '€',
+        thank_you_text: 'Thank you for your business!'
     });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -132,6 +133,19 @@ function Settings() {
                         onChange={handleChange}
                         style={styles.input}
                         maxLength="3"
+                        required
+                    />
+                </div>
+
+                <div style={styles.formGroup}>
+                <label htmlFor="thank_you_text">Thank You Message</label>
+                    <textarea
+                        id="thank_you_text"
+                        name="thank_you_text"
+                        value={settings.thank_you_text}
+                        onChange={handleChange}
+                        style={styles.textarea}
+                        rows="4"
                         required
                     />
                 </div>

@@ -20,7 +20,8 @@ const createSettingsTable = `
         ('vat_percentage', '21.0'),
         ('company_name', 'Your Company Name'),
         ('company_address', ''),
-        ('currency_symbol', '€');
+        ('currency_symbol', '€'),
+        ('thank_you_text', 'Thank you for your business!');
 `;
 
 module.exports = {

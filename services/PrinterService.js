@@ -122,7 +122,7 @@ class PrinterService {
                 printBackground: true,
                 deviceName: this.printerName,
                 color: false,
-                margins: { marginType: 'printableArea' },
+                margins: { marginType: 'custom', top: 0, bottom: 10, left: 0, right: 10 },
                 mediaSize: {
                     name: 'CUSTOM',
                     width_microns: 80000,
@@ -150,7 +150,8 @@ class PrinterService {
             company_name: 'Your Company Name',
             company_address: '',
             vat_number: '',
-            currency_symbol: '€'
+            currency_symbol: '€',
+            thank_you_text: 'Thank you!'
         };
 
         return `
@@ -227,8 +228,8 @@ class PrinterService {
                 ${sale.notes ? `
                     <div class="center">Notes: ${sale.notes}</div>
                     <div class="divider"></div>
-                ` : ''}
-                <div class="center">Thank you!</div>
+                ` : ''}              
+                <div class="center">${settings.thank_you_text.split('\n').join('<br/>')}</div>
             </body>
             </html>
         `;
