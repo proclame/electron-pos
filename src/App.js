@@ -40,6 +40,7 @@ function POSSystem() {
   const [needsInvoice, setNeedsInvoice] = useState(false);
   const barcodeInputRef = useRef(null);
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
+  const isUpdatingRef = useRef(false);
 
   // Initialize cart from currentSale or empty
   const [cart, setCart] = useState([]);
@@ -57,15 +58,25 @@ function POSSystem() {
 
   // Update current sale whenever cart changes
   useEffect(() => {
-    if (cart.length > 0) {
-      setCurrentSale({
-        cart,
-        total,
-        notes,
-        needs_invoice: needsInvoice
-      });
+    if (cart.length > 0 && !isUpdatingRef.current) {
+        setCurrentSale({
+            cart,
+            total,
+            notes,
+            needs_invoice: needsInvoice
+        });
     }
   }, [cart, total, notes, needsInvoice]);
+
+  // Remove the other currentSale effect since it might be causing issues
+  useEffect(() => {
+    if (currentSale && !cart.length) {  // Only update if cart is empty
+        setCart(currentSale.cart || []);
+        setTotal(currentSale.total || 0);
+        setNotes(currentSale.notes || '');
+        setNeedsInvoice(currentSale.needs_invoice || false);
+    }
+  }, [currentSale]);
 
   useEffect(() => {
     if (!isSuspendedBarcodeInput) {
@@ -93,9 +104,25 @@ function POSSystem() {
 
   const handleBarcodeSubmit = (e) => {
     e.preventDefault();
-    if (barcodeInput.trim()) {  // Only submit if there's a barcode
+    if (barcodeInput.trim()) {
         submitBarcode(barcodeInput);
     }
+  };
+
+  const addProductToCart = (product) => {
+    const updatedCart = [...cart];
+    const existingItem = updatedCart.find(item => item.product.id === product.id);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        updatedCart.push({ product, quantity: 1 });
+    }
+
+    const newTotal = calculateTotal(updatedCart);
+    
+    setCart(updatedCart);
+    setTotal(newTotal);
   };
 
   const submitBarcode = async (barcode) => {
@@ -103,22 +130,7 @@ function POSSystem() {
         const response = await fetch(`http://localhost:5001/api/products/barcode/${barcode}`);
         if (response.ok) {
             const product = await response.json();
-            
-            // Update cart directly instead of using addToCart
-            setCart(currentCart => {
-                const newCart = [...currentCart];
-                const existingItem = newCart.find(item => item.product.id === product.id);
-                
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    newCart.push({ product, quantity: 1 });
-                }
-
-                // Update total
-                setTotal(calculateTotal(newCart));
-                return newCart;
-            });
+            addProductToCart(product);
         } else {
             alert('Product not found!');
         }
@@ -305,7 +317,8 @@ function POSSystem() {
       <div style={styles.searchContainer}>
         <ProductSearch 
             onProductSelect={(product) => {
-                submitBarcode(product.barcode);
+                addProductToCart(product);
+                setBarcodeInput('');
             }}
             onFocus={() => {
                 if (suspendTimeoutRef.current) {
