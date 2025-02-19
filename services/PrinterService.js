@@ -1,4 +1,6 @@
 const os = require('os');
+const fs = require('fs');
+const path = require('path');
 const { BrowserWindow } = require('electron');
 const { PosPrinter } = require('electron-pos-printer');
 const { db } = require('../models/database');
@@ -9,6 +11,11 @@ class PrinterService {
         this.window = null;
         this.printerName = null;
         this.settings = null;
+        this.tempDir = path.join(os.tmpdir(), 'pos-receipts');
+        // Create temp directory if it doesn't exist
+        if (!fs.existsSync(this.tempDir)) {
+            fs.mkdirSync(this.tempDir, { recursive: true });
+        }
     }
 
     async getSettings() {
@@ -100,7 +107,6 @@ class PrinterService {
                 throw new Error('Star printer not found');
             }
 
-            // Fetch settings before generating receipt
             this.settings = await this.getSettings();
 
             let theWindow = new BrowserWindow({
@@ -110,7 +116,8 @@ class PrinterService {
                 webPreferences: {
                     nodeIntegration: true,
                     contextIsolation: false,
-                    nativeWindowOpen: true
+                    nativeWindowOpen: true,
+                    webSecurity: false
                 }
             });
 
@@ -151,13 +158,16 @@ class PrinterService {
             company_address: '',
             vat_number: '',
             currency_symbol: '€',
-            thank_you_text: 'Thank you!'
+            thank_you_text: 'Thank you!',
+            logo_base64: ''
         };
 
         return `
             <!DOCTYPE html>
             <html>
             <head>
+                <meta http-equiv="Content-Security-Policy" 
+                      content="default-src 'self' 'unsafe-inline' data: http://localhost:5001">
                 <style>
                     body {
                         font-family: 'Arial', sans-serif;
@@ -183,9 +193,19 @@ class PrinterService {
                         border-top: 1px dashed #000;
                         margin: 3mm 0;
                     }
+                    .logo {
+                        max-width: 200px;
+                        max-height: 100px;
+                        margin: 0 auto;
+                        display: block;
+                        margin-bottom: 5mm;
+                    }
                 </style>
             </head>
             <body>
+                ${settings.logo_base64 ? `
+                    <img src="${settings.logo_base64}" class="logo" alt="Logo"/>
+                ` : ''}
                 <div class="center bold">${settings.company_name}</div>
                 ${settings.company_address ? `
                     <div class="center">${settings.company_address.split('\n').join('<br/>')}</div>

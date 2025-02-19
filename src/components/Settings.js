@@ -7,7 +7,8 @@ function Settings() {
         company_name: '',
         company_address: '',
         currency_symbol: '€',
-        thank_you_text: 'Thank you for your business!'
+        thank_you_text: 'Thank you for your business!',
+        logo_base64: ''
     });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -63,6 +64,27 @@ function Settings() {
         setSettings(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSettings(prev => ({
+                    ...prev,
+                    logo_base64: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveLogo = () => {
+        setSettings(prev => ({
+            ...prev,
+            logo_base64: ''
         }));
     };
 
@@ -150,6 +172,37 @@ function Settings() {
                     />
                 </div>
 
+                <div style={styles.formGroup}>
+                    <label>Logo</label>
+                    <div style={styles.logoContainer}>
+                        {settings.logo_base64 ? (
+                            <div style={styles.logoPreview}>
+                                <img 
+                                    src={settings.logo_base64} 
+                                    alt="Logo" 
+                                    style={styles.logoImage}
+                                    referrerPolicy="no-referrer"
+                                    crossOrigin="anonymous"
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={handleRemoveLogo}
+                                    style={styles.removeButton}
+                                >
+                                    Remove Logo
+                                </button>
+                            </div>
+                        ) : (
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                style={styles.fileInput}
+                            />
+                        )}
+                    </div>
+                </div>
+
                 {message && (
                     <div style={styles.message}>
                         {message}
@@ -211,6 +264,34 @@ const styles = {
         borderRadius: '4px',
         backgroundColor: '#f8f9fa',
         textAlign: 'center'
+    },
+    logoContainer: {
+        marginTop: '10px'
+    },
+    logoPreview: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px'
+    },
+    logoImage: {
+        maxWidth: '200px',
+        maxHeight: '100px',
+        objectFit: 'contain'
+    },
+    removeButton: {
+        padding: '8px 16px',
+        backgroundColor: '#dc3545',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer'
+    },
+    fileInput: {
+        width: '100%',
+        padding: '8px',
+        border: '1px solid #ddd',
+        borderRadius: '4px'
     }
 };
 
