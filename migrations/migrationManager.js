@@ -4,6 +4,7 @@ const createProductsTable = require('./001_create_products_table');
 const createSalesTable = require('./002_create_sales_table');
 const createSaleItemsTable = require('./003_create_sale_items_table');
 const createSettingsTable = require('./004_create_settings_table');
+const createActiveSalesTable = require('./005_create_active_sales_table');
 
 class MigrationManager {
     constructor(dbPath) {
@@ -146,7 +147,8 @@ const migrations = [
     createProductsTable,
     createSalesTable,
     createSaleItemsTable,
-    createSettingsTable
+    createSettingsTable,
+    createActiveSalesTable
 ];
 
 async function runMigrations(db) {

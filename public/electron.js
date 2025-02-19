@@ -258,6 +258,78 @@ expressApp.get('/api/products/search', (req, res) => {
     }
 });
 
+// Add these new endpoints
+expressApp.post('/api/active-sales', (req, res) => {
+    try {
+        const { cart_data, status = 'current', notes = '' } = req.body;
+        
+        const result = db.prepare(`
+            INSERT INTO active_sales (cart_data, status, notes)
+            VALUES (?, ?, ?)
+        `).run(JSON.stringify(cart_data), status, notes);
+        
+        res.json({ id: result.lastInsertRowid });
+    } catch (error) {
+        console.error('Error saving active sale:', error);
+        res.status(500).json({ message: 'Error saving sale' });
+    }
+});
+
+expressApp.get('/api/active-sales', (req, res) => {
+    try {
+        const sales = db.prepare(`
+            SELECT * FROM active_sales
+            ORDER BY created_at DESC
+        `).all();
+        
+        res.json(sales.map(sale => ({
+            ...sale,
+            cart_data: JSON.parse(sale.cart_data)
+        })));
+    } catch (error) {
+        console.error('Error fetching active sales:', error);
+        res.status(500).json({ message: 'Error fetching sales' });
+    }
+});
+
+expressApp.put('/api/active-sales/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const { cart_data, status, notes } = req.body;
+        
+        const result = db.prepare(`
+            UPDATE active_sales 
+            SET cart_data = ?, status = ?, notes = ?
+            WHERE id = ?
+        `).run(JSON.stringify(cart_data), status, notes, id);
+        
+        if (result.changes > 0) {
+            res.json({ message: 'Sale updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        console.error('Error updating active sale:', error);
+        res.status(500).json({ message: 'Error updating sale' });
+    }
+});
+
+expressApp.delete('/api/active-sales/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = db.prepare('DELETE FROM active_sales WHERE id = ?').run(id);
+        
+        if (result.changes > 0) {
+            res.json({ message: 'Sale deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting active sale:', error);
+        res.status(500).json({ message: 'Error deleting sale' });
+    }
+});
+
 // Initialize database before starting the server
 async function startServer() {
     try {

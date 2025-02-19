@@ -3,37 +3,69 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
 import ProductSearch from './components/ProductSearch';
-
+import SalesManager from './components/SalesManager';
+import { SalesProvider, useSales } from './contexts/SalesContext';
+import HoldNoteModal from './components/HoldNoteModal';
 
 function App() {
   return (
-    <Router>
-      <div style={styles.nav}>
-        <Link to="/" style={styles.navLink}>POS</Link>
-        <Link to="/products" style={styles.navLink}>Products</Link>
-        <Link to="/settings" style={styles.navLink}>Settings</Link>
-      </div>
-      
-      <Routes>
-        <Route path="/" element={<POSSystem />} />
-        <Route path="/products" element={<ProductManagement />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </Router>
+    <SalesProvider>
+      <Router>
+        <div style={styles.nav}>
+          <Link to="/" style={styles.navLink}>POS</Link>
+          <Link to="/products" style={styles.navLink}>Products</Link>
+          <Link to="/settings" style={styles.navLink}>Settings</Link>
+        </div>
+        
+        <Routes>
+          <Route path="/" element={<POSSystem />} />
+          <Route path="/products" element={<ProductManagement />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+
+        <SalesManager />
+      </Router>
+    </SalesProvider>
   );
 }
 
 function POSSystem() {
-  const [cart, setCart] = useState([]);
+  const { currentSale, setCurrentSale, putSaleOnHold } = useSales();
   const [barcodeInput, setBarcodeInput] = useState('');
-  const [total, setTotal] = useState(0);
-  const barcodeInputRef = useRef(null);
   const [editingQuantity, setEditingQuantity] = useState(null);
   const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
   const suspendTimeoutRef = useRef(null);
   const [quantityInputValue, setQuantityInputValue] = useState('');
   const [notes, setNotes] = useState('');
   const [needsInvoice, setNeedsInvoice] = useState(false);
+  const barcodeInputRef = useRef(null);
+  const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
+
+  // Initialize cart from currentSale or empty
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  // Load current sale when component mounts
+  useEffect(() => {
+    if (currentSale) {
+      setCart(currentSale.cart || []);
+      setTotal(currentSale.total || 0);
+      setNotes(currentSale.notes || '');
+      setNeedsInvoice(currentSale.needs_invoice || false);
+    }
+  }, [currentSale]);
+
+  // Update current sale whenever cart changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      setCurrentSale({
+        cart,
+        total,
+        notes,
+        needs_invoice: needsInvoice
+      });
+    }
+  }, [cart, total, notes, needsInvoice]);
 
   useEffect(() => {
     if (!isSuspendedBarcodeInput) {
@@ -71,7 +103,22 @@ function POSSystem() {
         const response = await fetch(`http://localhost:5001/api/products/barcode/${barcode}`);
         if (response.ok) {
             const product = await response.json();
-            addToCart(product);
+            
+            // Update cart directly instead of using addToCart
+            setCart(currentCart => {
+                const newCart = [...currentCart];
+                const existingItem = newCart.find(item => item.product.id === product.id);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    newCart.push({ product, quantity: 1 });
+                }
+
+                // Update total
+                setTotal(calculateTotal(newCart));
+                return newCart;
+            });
         } else {
             alert('Product not found!');
         }
@@ -88,23 +135,6 @@ function POSSystem() {
     return cartItems.reduce((sum, item) => 
       sum + (item.product.unit_price * item.quantity), 0
     );
-  };
-
-  // Update addToCart
-  const addToCart = (product) => {
-    setCart(currentCart => {
-      const newCart = [...currentCart];
-      const existingItem = newCart.find(item => item.product.id === product.id);
-      
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        newCart.push({ product, quantity: 1 });
-      }
-
-      setTotal(calculateTotal(newCart));
-      return newCart;
-    });
   };
 
   // Update removeFromCart
@@ -132,10 +162,26 @@ function POSSystem() {
     setEditingQuantity(null);
   };
 
-  // Update clearCart
+  const handlePutOnHold = async (notes = '') => {
+    if (cart.length > 0) {
+      const success = await putSaleOnHold({
+        cart,
+        total,
+        notes: notes || ''
+      }, notes);
+
+      if (success) {
+        clearCart();
+      }
+    }
+  };
+
   const clearCart = () => {
     setCart([]);
     setTotal(0);
+    setNotes('');
+    setNeedsInvoice(false);
+    setCurrentSale(null);
     barcodeInputRef.current?.focus();
   };
 
@@ -259,8 +305,7 @@ function POSSystem() {
       <div style={styles.searchContainer}>
         <ProductSearch 
             onProductSelect={(product) => {
-                addToCart(product);
-                setBarcodeInput('');
+                submitBarcode(product.barcode);
             }}
             onFocus={() => {
                 if (suspendTimeoutRef.current) {
@@ -347,6 +392,13 @@ function POSSystem() {
             </div>
             <div style={styles.cartButtons}>
               <button 
+                onClick={() => setIsHoldModalOpen(true)}
+                style={styles.holdButton}
+                disabled={cart.length === 0}
+              >
+                Put on Hold
+              </button>
+              <button 
                 onClick={clearCart}
                 style={styles.clearButton}
                 disabled={cart.length === 0}
@@ -364,6 +416,15 @@ function POSSystem() {
           </div>
         </div>
       </div>
+
+      <HoldNoteModal 
+        isOpen={isHoldModalOpen}
+        onClose={() => setIsHoldModalOpen(false)}
+        onConfirm={(notes) => {
+          handlePutOnHold(notes);
+          setIsHoldModalOpen(false);
+        }}
+      />
     </div>
   );
 }
@@ -525,6 +586,14 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '5px',
     border: '1px solid #ddd'
+  },
+  holdButton: {
+    padding: '12px 24px',
+    backgroundColor: '#ffc107',
+    color: '#000',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
   }
 };
 
