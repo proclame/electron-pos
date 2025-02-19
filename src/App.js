@@ -136,34 +136,50 @@ function POSSystem() {
 
   const handleCheckout = async () => {
     try {
-      const saleData = {
-        items: cart,
-        subtotal: total,
-        total: total,
-        payment_method: 'cash',
-        needs_invoice: needsInvoice,
-        notes: notes.trim()
-      };
+        const saleData = {
+            items: cart,
+            subtotal: total,
+            total: total,
+            payment_method: 'cash',
+            needs_invoice: needsInvoice,
+            notes: notes.trim()
+        };
 
-      const response = await fetch('http://localhost:5001/api/sales', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(saleData)
-      });
+        const response = await fetch('http://localhost:5001/api/sales', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(saleData)
+        });
 
-      if (response.ok) {
-        alert('Sale completed successfully!');
-        clearCart();
-        setNotes('');
-        setNeedsInvoice(false);
-      } else {
-        alert('Error completing sale');
-      }
+        if (response.ok) {
+            const { id } = await response.json();
+            
+            // Print receipt
+            try {
+                await fetch('http://localhost:5001/api/print/receipt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ...saleData, id })
+                });
+            } catch (printError) {
+                console.error('Error printing receipt:', printError);
+                alert('Sale completed but failed to print receipt');
+            }
+
+            alert('Sale completed successfully!');
+            clearCart();
+            setNotes('');
+            setNeedsInvoice(false);
+        } else {
+            alert('Error completing sale');
+        }
     } catch (err) {
-      console.error('Error during checkout:', err);
-      alert('Error completing sale');
+        console.error('Error during checkout:', err);
+        alert('Error completing sale');
     }
   };
 

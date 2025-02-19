@@ -1,10 +1,12 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const express = require('express');
 const cors = require('cors');
 const { db, initDatabase } = require('../models/database');
 const csv = require('csv-parse');
+const os = require('os');
+const PrinterService = require('../services/PrinterService');
 
 // Express setup
 const expressApp = express();
@@ -162,6 +164,28 @@ expressApp.post('/api/sales', (req, res) => {
     } catch (error) {
         console.error('Error creating sale:', error);
         res.status(500).json({ message: 'Error creating sale' });
+    }
+});
+
+// Add to your existing API routes
+expressApp.get('/api/printers', (req, res) => {
+    try {
+        const printers = PrinterService.getAvailablePrinters();
+        res.json(printers);
+    } catch (error) {
+        console.error('Error getting printers:', error);
+        res.status(500).json({ message: 'Error getting printers' });
+    }
+});
+
+expressApp.post('/api/print/receipt', async (req, res) => {
+    try {
+        const sale = req.body;
+        await PrinterService.printReceipt(sale);
+        res.json({ message: 'Receipt printed successfully' });
+    } catch (error) {
+        console.error('Error printing receipt:', error);
+        res.status(500).json({ message: 'Error printing receipt' });
     }
 });
 
