@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
+import ProductSearch from './components/ProductSearch';
+
 
 function App() {
   return (
@@ -254,6 +256,27 @@ function POSSystem() {
           />
         </form>
       </div>
+      <div style={styles.searchContainer}>
+        <ProductSearch 
+            onProductSelect={(product) => {
+                addToCart(product);
+                setBarcodeInput('');
+            }}
+            onFocus={() => {
+                if (suspendTimeoutRef.current) {
+                    clearTimeout(suspendTimeoutRef.current);
+                }
+                setIsSuspendedBarcodeInput(true);
+            }}
+            onBlur={() => {
+                if (suspendTimeoutRef.current) {
+                    clearTimeout(suspendTimeoutRef.current);
+                }
+                setIsSuspendedBarcodeInput(false);
+            }}
+        />
+      </div>
+
 
       <div style={styles.mainContent}>
         <div style={styles.cartSection}>
@@ -495,6 +518,13 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid #ddd',
     resize: 'vertical'
+  },
+  searchContainer: {
+    flex: '1',
+    padding: '20px',
+    backgroundColor: 'white',
+    borderRadius: '5px',
+    border: '1px solid #ddd'
   }
 };
 

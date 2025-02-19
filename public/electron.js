@@ -235,6 +235,29 @@ expressApp.put('/api/settings', (req, res) => {
     }
 });
 
+// Add new search endpoint
+expressApp.get('/api/products/search', (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.json({ products: [] });
+        }
+
+        const searchTerm = `%${query}%`;
+        const products = db.prepare(`
+            SELECT * FROM products 
+            WHERE name LIKE ? 
+            OR product_code LIKE ?
+            LIMIT 20
+        `).all(searchTerm, searchTerm);
+
+        res.json({ products });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({ message: 'Error searching products' });
+    }
+});
+
 // Initialize database before starting the server
 async function startServer() {
     try {
