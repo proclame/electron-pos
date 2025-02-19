@@ -9,13 +9,16 @@ function Settings() {
         currency_symbol: '€',
         thank_you_text: 'Thank you for your business!',
         logo_base64: '',
-        use_printer: true
+        use_printer: true,
+        selected_printer: ''
     });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
+    const [printers, setPrinters] = useState([]);
 
     useEffect(() => {
         fetchSettings();
+        fetchPrinters();
     }, []);
 
     const fetchSettings = async () => {
@@ -30,6 +33,18 @@ function Settings() {
         } catch (error) {
             console.error('Error fetching settings:', error);
             setMessage('Error loading settings');
+        }
+    };
+
+    const fetchPrinters = async () => {
+        try {
+            const response = await fetch('http://localhost:5001/api/printers');
+            if (response.ok) {
+                const data = await response.json();
+                setPrinters(data);
+            }
+        } catch (error) {
+            console.error('Error fetching printers:', error);
         }
     };
 
@@ -220,6 +235,27 @@ function Settings() {
                     </label>
                 </div>
 
+                {settings.use_printer === 'true' && (
+                    <div style={styles.formGroup}>
+                        <label htmlFor="selected_printer">Select Printer</label>
+                        <select
+                            id="selected_printer"
+                            name="selected_printer"
+                            value={settings.selected_printer}
+                            onChange={handleChange}
+                            style={styles.select}
+                            required={settings.use_printer === 'true'}
+                        >
+                            <option value="">Select a printer</option>
+                            {printers.map(printer => (
+                                <option key={printer.name} value={printer.name}>
+                                    {printer.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 {message && (
                     <div style={styles.message}>
                         {message}
@@ -312,6 +348,13 @@ const styles = {
     },
     checkbox: {
         marginRight: '10px'
+    },
+    select: {
+        padding: '8px',
+        fontSize: '16px',
+        borderRadius: '4px',
+        border: '1px solid #ddd',
+        backgroundColor: 'white'
     }
 };
 

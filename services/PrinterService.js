@@ -18,6 +18,11 @@ class PrinterService {
         }
     }
 
+    clearSettingsCache() {
+        this.settings = null;
+        this.printerName = null;
+    }
+
     async getSettings() {
         if (!this.settings) {
             const settings = db.prepare('SELECT key, value FROM settings').all();
@@ -106,15 +111,11 @@ class PrinterService {
 
     async printReceiptMac(sale) {
         try {
-            if (!this.printerName) {
-                this.findStarPrinter();
+            if (!this.settings.selected_printer) {
+                throw new Error('No printer selected in settings');
             }
 
-            if (!this.printerName) {
-                throw new Error('Star printer not found');
-            }
-
-            this.settings = await this.getSettings();
+            this.printerName = this.settings.selected_printer;
 
             let theWindow = new BrowserWindow({
                 width: 300,
@@ -265,21 +266,6 @@ class PrinterService {
     getAvailablePrinters() {
         const win = BrowserWindow.getAllWindows()[0];
         return win.webContents.getPrinters();
-    }
-
-    findStarPrinter() {
-        const win = BrowserWindow.getAllWindows()[0];
-        const printers = win.webContents.getPrinters();
-        // console.log('All printers:', printers);
-        
-        const starPrinter = printers.find(p => p.name.includes('Star'));
-        if (starPrinter) {
-            console.log('Found Star printer:', starPrinter.name);
-            this.printerName = starPrinter.name;
-            return true;
-        }
-        console.log('Star printer not found');
-        return false;
     }
 }
 

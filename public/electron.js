@@ -224,6 +224,9 @@ expressApp.put('/api/settings', (req, res) => {
 
         // Execute the transaction
         updateMany(settings);
+
+        // Clear the cached settings in PrinterService
+        PrinterService.clearSettingsCache();
         
         res.json({ message: 'Settings updated successfully' });
     } catch (error) {

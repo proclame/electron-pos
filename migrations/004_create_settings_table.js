@@ -23,7 +23,8 @@ const createSettingsTable = `
         ('currency_symbol', '€'),
         ('thank_you_text', 'Thank you for your business!'),
         ('logo_base64', ''),
-        ('use_printer', 'true');
+        ('use_printer', 'true'),
+        ('selected_printer', '');
 `;
 
 module.exports = {
