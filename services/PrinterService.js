@@ -129,7 +129,7 @@ class PrinterService {
                 printBackground: true,
                 deviceName: this.printerName,
                 color: false,
-                margins: { marginType: 'custom', top: 0, bottom: 10, left: 0, right: 10 },
+                margins: { marginType: 'custom', top: 0, bottom: 20, left: 0, right: 10 },
                 mediaSize: {
                     name: 'CUSTOM',
                     width_microns: 80000,
@@ -249,7 +249,7 @@ class PrinterService {
                     <div class="center">Notes: ${sale.notes}</div>
                     <div class="divider"></div>
                 ` : ''}              
-                <div class="center">${settings.thank_you_text.split('\n').join('<br/>')}</div>
+                <div class="center">${settings.thank_you_text.split('\n').join('<br/>')}<br>&nbsp;.</div>
             </body>
             </html>
         `;
