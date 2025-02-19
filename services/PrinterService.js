@@ -105,14 +105,18 @@ class PrinterService {
                 silent: true,
                 printBackground: true,
                 deviceName: this.printerName,
-                // mediaSize: {
-                //     name: 'CUSTOM',
-                //     width_microns: 80000,
-                //     height_microns: 200000,
-                //     custom_display_name: 'Receipt'
-                // },
+                color: false,
+                margins: { marginType: 'printableArea' },
+                
+                header: "test",
+                footer: "test",
+                 mediaSize: {
+                    name: 'CUSTOM',
+                    width_microns: 80000,
+                    height_microns: 200000,
+                    custom_display_name: 'Receipt'
+                },
                 dpi: { horizontal: 203, vertical: 203 },
-                color: false
             }, function(success, failureReason) {
                 if (!success) {
                     console.error('Print failed:', failureReason);
