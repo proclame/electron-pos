@@ -22,7 +22,8 @@ const createSettingsTable = `
         ('company_address', ''),
         ('currency_symbol', '€'),
         ('thank_you_text', 'Thank you for your business!'),
-        ('logo_base64', '');
+        ('logo_base64', ''),
+        ('use_printer', 'true');
 `;
 
 module.exports = {

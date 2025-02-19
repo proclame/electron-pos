@@ -30,6 +30,13 @@ class PrinterService {
     }
 
     async printReceipt(sale) {
+        // First check if printing is enabled
+        await this.getSettings();
+        if (this.settings.use_printer !== 'true') {
+            console.log('Printing is disabled in settings');
+            return;
+        }
+
         console.log('Platform:', this.platform);
         if (this.platform === 'win32') {
             console.log('I want to print on windows');
@@ -129,7 +136,7 @@ class PrinterService {
                 printBackground: true,
                 deviceName: this.printerName,
                 color: false,
-                margins: { marginType: 'custom', top: 0, bottom: 20, left: 0, right: 10 },
+                margins: { marginType: 'custom', top: 0, bottom: 10, left: 0, right: 10 },
                 mediaSize: {
                     name: 'CUSTOM',
                     width_microns: 80000,

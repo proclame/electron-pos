@@ -8,7 +8,8 @@ function Settings() {
         company_address: '',
         currency_symbol: '€',
         thank_you_text: 'Thank you for your business!',
-        logo_base64: ''
+        logo_base64: '',
+        use_printer: true
     });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -203,6 +204,22 @@ function Settings() {
                     </div>
                 </div>
 
+                <div style={styles.formGroup}>
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="use_printer"
+                            checked={settings.use_printer === 'true'}
+                            onChange={(e) => setSettings(prev => ({
+                                ...prev,
+                                use_printer: e.target.checked.toString()
+                            }))}
+                            style={styles.checkbox}
+                        />
+                        Enable Printer
+                    </label>
+                </div>
+
                 {message && (
                     <div style={styles.message}>
                         {message}
@@ -292,6 +309,9 @@ const styles = {
         padding: '8px',
         border: '1px solid #ddd',
         borderRadius: '4px'
+    },
+    checkbox: {
+        marginRight: '10px'
     }
 };
 
