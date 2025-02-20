@@ -1,0 +1,22 @@
+# Dependencies
+/node_modules
+
+# Production
+/build
+/dist
+
+# Database
+/models/database.sqlite
+*.sqlite
+*.sqlite-journal
+
+# macOS
+.DS_Store
+
+# Electron
+.electron-builder.env
+
+# Temporary files
+*.tmp
+*.temp
+.cache/ 
