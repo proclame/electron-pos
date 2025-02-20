@@ -38,16 +38,12 @@ class PrinterService {
         // First check if printing is enabled
         await this.getSettings();
         if (this.settings.use_printer !== 'true') {
-            console.log('Printing is disabled in settings');
             return;
         }
 
-        console.log('Platform:', this.platform);
         if (this.platform === 'win32') {
-            console.log('I want to print on windows');
             return this.printReceiptWindows(sale);
         } else {
-            console.log('I want to print on mac');
             return this.printReceiptMac(sale);
         }
     }
@@ -223,7 +219,7 @@ class PrinterService {
                 ` : ''}
                 <div class="divider"></div>
                 <div>Receipt #: ${sale.id}</div>
-                <div>Date: ${new Date().toLocaleString()}</div>
+                <div>Date: ${new Date().toLocaleString("nl-NL")}</div>
                 <div class="divider"></div>
                 <table>
                     <tr>
