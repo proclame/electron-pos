@@ -1,8 +1,5 @@
 const os = require('os');
-const fs = require('fs');
-const path = require('path');
 const { BrowserWindow } = require('electron');
-const { PosPrinter } = require('electron-pos-printer');
 const { db } = require('../models/database');
 
 class PrinterService {
@@ -11,11 +8,6 @@ class PrinterService {
         this.window = null;
         this.printerName = null;
         this.settings = null;
-        this.tempDir = path.join(os.tmpdir(), 'pos-receipts');
-        // Create temp directory if it doesn't exist
-        if (!fs.existsSync(this.tempDir)) {
-            fs.mkdirSync(this.tempDir, { recursive: true });
-        }
     }
 
     clearSettingsCache() {
@@ -41,67 +33,11 @@ class PrinterService {
             return;
         }
 
-        if (this.platform === 'win32') {
-            return this.printReceiptWindows(sale);
-        } else {
+        if (this.platform === 'darwin') {
             return this.printReceiptMac(sale);
-        }
-    }
-
-    async printReceiptWindows(sale) {
-        try {
-            const data = [
-                {
-                    type: 'text',
-                    value: 'YOUR STORE NAME',
-                    style: { fontWeight: '700', textAlign: 'center', fontSize: '14px' }
-                },
-                {
-                    type: 'text',
-                    value: '123 Your Street',
-                    style: { textAlign: 'center' }
-                },
-                {
-                    type: 'text',
-                    value: `Receipt #: ${sale.id}`,
-                    style: { textAlign: 'left', marginTop: '10px' }
-                },
-                {
-                    type: 'table',
-                    style: { width: '100%' },
-                    tableHeader: ['Item', 'Qty', 'Price', 'Total'],
-                    tableBody: sale.items.map(item => [
-                        item.product.name,
-                        item.quantity.toString(),
-                        `€${item.product.unit_price.toFixed(2)}`,
-                        `€${(item.quantity * item.product.unit_price).toFixed(2)}`
-                    ])
-                },
-                {
-                    type: 'text',
-                    value: `Total: €${sale.total.toFixed(2)}`,
-                    style: { fontWeight: '700', textAlign: 'right', marginTop: '10px' }
-                },
-                {
-                    type: 'text',
-                    value: sale.notes || '',
-                    style: { textAlign: 'center', marginTop: '10px' }
-                }
-            ];
-
-            const options = {
-                preview: false,
-                width: '280px',
-                margin: '0 0 0 0',
-                copies: 1,
-                printerName: 'POS-58', // Update this to match your printer name
-                timeOutPerLine: 400
-            };
-
-            await PosPrinter.print(data, options);
-        } catch (error) {
-            console.error('Error printing receipt (Windows):', error);
-            throw error;
+        } else {
+            console.log('Printing is only supported on macOS for now');
+            return;
         }
     }
 
