@@ -12,7 +12,7 @@ router.post('/', (req, res) => {
                     subtotal, discount_amount, total, 
                     payment_method, needs_invoice, notes
                 ) VALUES (?, ?, ?, ?, ?, ?)
-            `).run(subtotal, discount_amount, total, payment_method, needs_invoice, notes);
+            `).run(subtotal, discount_amount, total, payment_method, needs_invoice ? 1 : 0, notes);
 
             const saleId = saleResult.lastInsertRowid;
 
