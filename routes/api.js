@@ -11,9 +11,9 @@ router.use('/products', productsRouter);
 router.use('/sales', salesRouter);
 
 // Add to your existing API routes
-router.get('/printers', (req, res) => {
+router.get('/printers', async (req, res) => {
     try {
-        const printers = PrinterService.getAvailablePrinters();
+        const printers = await PrinterService.getAvailablePrinters();
         res.json(printers);
     } catch (error) {
         console.error('Error getting printers:', error);

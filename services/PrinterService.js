@@ -195,9 +195,9 @@ class PrinterService {
         `;
     }
 
-    getAvailablePrinters() {
+     getAvailablePrinters() {
         const win = BrowserWindow.getAllWindows()[0];
-        return win.webContents.getPrinters();
+        return win.webContents.getPrintersAsync();
     }
 }
 
