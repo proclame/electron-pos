@@ -41,6 +41,8 @@ function POSSystem() {
   const barcodeInputRef = useRef(null);
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
   const isUpdatingRef = useRef(false);
+  const [editingPrice, setEditingPrice] = useState(null);
+  const [priceInputValue, setPriceInputValue] = useState('');
 
   // Initialize cart from currentSale or empty
   const [cart, setCart] = useState([]);
@@ -298,6 +300,43 @@ function POSSystem() {
     };
   }, []);
 
+  // Add this function to handle price editing
+  const handlePriceClick = (index) => {
+    if (suspendTimeoutRef.current) {
+      clearTimeout(suspendTimeoutRef.current);
+    }
+    setIsSuspendedBarcodeInput(true);
+
+    if (editingQuantity !== null) return;
+    
+    setEditingPrice(index);
+    setPriceInputValue(cart[index].product.unit_price.toString());
+  };
+
+  const handlePriceSubmit = (e) => {
+    e.preventDefault();
+    if (editingPrice === null) return;
+
+    const newPrice = parseFloat(priceInputValue);
+    if (isNaN(newPrice) || newPrice < 0) {
+        setPriceInputValue(cart[editingPrice].product.unit_price.toString());
+        setEditingPrice(null);
+        setIsSuspendedBarcodeInput(false);
+        return;
+    }
+
+    // Update the existing cart item's price
+    setCart(currentCart => {
+        const updatedCart = [...currentCart];
+        updatedCart[editingPrice].product.unit_price = newPrice;
+        setTotal(calculateTotal(updatedCart));
+        return updatedCart;
+    });
+
+    setEditingPrice(null);
+    setIsSuspendedBarcodeInput(false);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.scannerSection}>
@@ -340,45 +379,83 @@ function POSSystem() {
         <div style={styles.cartSection}>
           <h2>Current Cart</h2>
           <div style={styles.cartItems}>
-            {cart.map((item, index) => (
-              <div key={index} style={styles.cartItem}>
-                <span style={styles.cartItemName}>{item.product.name}</span>
-                {editingQuantity === index ? (
-                  <input
-                    type="number"
-                    value={quantityInputValue}
-                    onChange={(e) => setQuantityInputValue(e.target.value)}
-                    onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
-                      } else if (e.key === 'Escape') {
-                        cancelEditingQuantity();
-                      }
-                    }}
-                    autoFocus
-                    style={styles.quantityInput}
-                    min="1"
-                  />
-                ) : (
-                  <span 
-                    style={styles.cartItemQuantity}
-                    onDoubleClick={() => startEditingQuantity(index)}
-                  >
-                    x{item.quantity}
-                  </span>
-                )}
-                <span style={styles.cartItemPrice}>
-                  €{(item.product.unit_price * item.quantity).toFixed(2)}
-                </span>
-                <button 
-                  onClick={() => removeFromCart(index)}
-                  style={styles.removeButton}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+            <table style={styles.cartTable}>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {cart.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.product.name}</td>
+                            <td>
+                                {editingPrice === index ? (
+                                    <form onSubmit={handlePriceSubmit}>
+                                        <input
+                                            type="number"
+                                            value={priceInputValue}
+                                            onChange={(e) => setPriceInputValue(e.target.value)}
+                                            onBlur={handlePriceSubmit}
+                                            step="0.01"
+                                            min="0"
+                                            style={styles.quantityInput}
+                                            autoFocus
+                                        />
+                                    </form>
+                                ) : (
+                                    <span 
+                                        onDoubleClick={() => handlePriceClick(index)}
+                                        style={styles.editableField}
+                                    >
+                                        €{item.product.unit_price.toFixed(2)}
+                                    </span>
+                                )}
+                            </td>
+                            <td>
+                                {editingQuantity === index ? (
+                                    <input
+                                        type="number"
+                                        value={quantityInputValue}
+                                        onChange={(e) => setQuantityInputValue(e.target.value)}
+                                        onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
+                                            } else if (e.key === 'Escape') {
+                                                cancelEditingQuantity();
+                                            }
+                                        }}
+                                        autoFocus
+                                        style={styles.quantityInput}
+                                        min="1"
+                                    />
+                                ) : (
+                                    <span 
+                                        style={styles.cartItemQuantity}
+                                        onDoubleClick={() => startEditingQuantity(index)}
+                                    >
+                                        x{item.quantity}
+                                    </span>
+                                )}
+                            </td>
+                            <td>€{(item.quantity * item.product.unit_price).toFixed(2)}</td>
+                            <td>
+                                <button
+                                    onClick={() => removeFromCart(index)}
+                                    style={styles.removeButton}
+                                >
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
           </div>
           <div style={styles.total}>
             <h3>Total: €{total.toFixed(2)}</h3>
@@ -567,12 +644,9 @@ const styles = {
     fontWeight: 'bold'
   },
   quantityInput: {
-    width: '60px',
+    width: '80px',
     padding: '4px',
-    textAlign: 'center',
-    border: '1px solid #007bff',
-    borderRadius: '4px',
-    margin: '0 8px'
+    fontSize: '16px'
   },
   checkoutFields: {
     marginTop: '10px',
@@ -607,6 +681,18 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer'
+  },
+  editableField: {
+    cursor: 'pointer',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    '&:hover': {
+        backgroundColor: '#f0f0f0'
+    }
+  },
+  cartTable: {
+    width: '100%',
+    borderCollapse: 'collapse'
   }
 };
 
