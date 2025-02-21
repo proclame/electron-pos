@@ -7,6 +7,7 @@ export function useSales() {
 }
 
 export function SalesProvider({ children }) {
+    const [currentSaleId, setCurrentSaleId] = useState(null);
     const [currentSale, setCurrentSale] = useState(null);
     const [salesOnHold, setSalesOnHold] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +25,13 @@ export function SalesProvider({ children }) {
                 const current = sales.find(s => s.status === 'current');
                 const onHold = sales.filter(s => s.status === 'on_hold');
                 
-                setCurrentSale(current ? current.cart_data : null);
+                if (current) {
+                    setCurrentSaleId(current.id);
+                    setCurrentSale(current.cart_data);
+                } else {
+                    setCurrentSaleId(null);
+                    setCurrentSale(null);
+                }
                 setSalesOnHold(onHold.map(s => ({
                     id: s.id,
                     ...s.cart_data,
@@ -40,19 +47,18 @@ export function SalesProvider({ children }) {
 
     const putSaleOnHold = async (sale, notes = '') => {
         try {
-            const response = await fetch('http://localhost:5001/api/active-sales', {
-                method: 'POST',
+            const response = await fetch('http://localhost:5001/api/active-sales/hold', {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    cart_data: sale,
-                    status: 'on_hold',
-                    notes
+                    id: currentSaleId,
+                    notes: notes
                 })
             });
 
             if (response.ok) {
-                const { id } = await response.json();
-                setSalesOnHold(prev => [...prev, { id, ...sale, notes }]);
+                setSalesOnHold(prev => [...prev, { id: currentSaleId, ...sale, notes }]);
+                setCurrentSaleId(null);
                 setCurrentSale(null);
                 return true;
             }
@@ -63,21 +69,29 @@ export function SalesProvider({ children }) {
         }
     };
 
+    const deleteSale = async (saleId) => {
+        await fetch(`http://localhost:5001/api/active-sales/${saleId}`, {
+            method: 'DELETE'
+        });
+    }
+
     const resumeSale = async (saleId) => {
         try {
-            // First, save current sale if it exists
-            if (currentSale) {
+            if (currentSale && currentSaleId) {
                 await putSaleOnHold(currentSale);
             }
-
             // Get the sale to resume
             const saleToResume = salesOnHold.find(s => s.id === saleId);
             if (!saleToResume) return false;
 
-            // Delete the held sale
-            await fetch(`http://localhost:5001/api/active-sales/${saleId}`, {
-                method: 'DELETE'
+            const response = await fetch('http://localhost:5001/api/active-sales/resume', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: saleId,
+                })
             });
+            setCurrentSaleId(saleId);
 
             // Update state
             setSalesOnHold(prev => prev.filter(s => s.id !== saleId));
@@ -91,17 +105,32 @@ export function SalesProvider({ children }) {
 
     const updateCurrentSale = async (sale) => {
         setCurrentSale(sale);
-        // Optionally save to database as current
+        
+        if (!sale) {
+            deleteSale(currentSaleId);
+            setCurrentSaleId(null);
+            return;
+        }
+
         try {
-            if (sale) {
-                await fetch('http://localhost:5001/api/active-sales', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cart_data: sale,
-                        status: 'current'
-                    })
-                });
+            const method = currentSaleId ? 'PUT' : 'POST';
+            const url = currentSaleId 
+                ? `http://localhost:5001/api/active-sales/${currentSaleId}`
+                : 'http://localhost:5001/api/active-sales';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cart_data: sale,
+                    status: 'current'
+                })
+            });
+
+            if (response.ok && !currentSaleId) {
+                // If this was a new sale, store the new ID
+                const { id } = await response.json();
+                setCurrentSaleId(id);
             }
         } catch (error) {
             console.error('Error saving current sale:', error);
@@ -114,6 +143,8 @@ export function SalesProvider({ children }) {
             salesOnHold,
             isLoading,
             setCurrentSale: updateCurrentSale,
+            setCurrentSaleId,
+            currentSaleId,
             putSaleOnHold,
             resumeSale,
             loadSales

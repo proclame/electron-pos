@@ -4,7 +4,7 @@ import HoldNoteModal from './HoldNoteModal';
 import { useSales } from '../contexts/SalesContext';
 
 function POSSystem() {
-    const { currentSale, setCurrentSale, putSaleOnHold } = useSales();
+    const { currentSale, setCurrentSale, putSaleOnHold, setCurrentSaleId, currentSaleId } = useSales();
     const [barcodeInput, setBarcodeInput] = useState('');
     const [editingQuantity, setEditingQuantity] = useState(null);
     const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
@@ -22,11 +22,8 @@ function POSSystem() {
     const [cart, setCart] = useState([]);
     const [total, setTotal] = useState(0);
   
-    // Load current sale when component mounts
     useEffect(() => {
-      console.log("POSSystem useEffect 1");
       if (currentSale) {
-        console.log(currentSale);
         setCart(currentSale.cart || []);
         setTotal(currentSale.total || 0);
         setNotes(currentSale.notes || '');
@@ -36,7 +33,6 @@ function POSSystem() {
   
     // Update current sale whenever cart changes
     useEffect(() => {
-      console.log("POSSystem useEffect 2");
       if (cart.length > 0 && !isUpdatingRef.current) {
           setCurrentSale({
               cart,
@@ -152,17 +148,20 @@ function POSSystem() {
         }, notes);
   
         if (success) {
-          clearCart();
+          setCurrentSaleId(null);
+          clearCart(false);
         }
       }
     };
   
-    const clearCart = () => {
+    const clearCart = (fullClear = true) => {
       setCart([]);
       setTotal(0);
       setNotes('');
       setNeedsInvoice(false);
-      setCurrentSale(null);
+      if(fullClear) {
+        setCurrentSale(null);
+      }
       barcodeInputRef.current?.focus();
     };
   
@@ -343,8 +342,9 @@ function POSSystem() {
   
   
         <div style={styles.mainContent}>
+         
           <div style={styles.cartSection}>
-            <h2>Current Cart</h2>
+            <h2>Current Cart: {currentSaleId}</h2>
             <div style={styles.cartItems}>
               <table style={styles.cartTable}>
                   <thead>
