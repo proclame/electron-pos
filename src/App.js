@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
 import SalesManager from './components/SalesManager';
-import { SalesProvider, useSales } from './contexts/SalesContext';
 import POSSystem from './components/POSSystem';
+import SalesHistory from './components/SalesHistory';
+import { SalesProvider, useSales } from './contexts/SalesContext';
+
 function App() {
   return (
     <SalesProvider>
@@ -12,12 +14,14 @@ function App() {
         <div style={styles.nav}>
           <Link to="/" style={styles.navLink}>POS</Link>
           <Link to="/products" style={styles.navLink}>Products</Link>
+          <Link to="/sales" style={styles.navLink}>Sales</Link>
           <Link to="/settings" style={styles.navLink}>Settings</Link>
         </div>
         
         <Routes>
           <Route path="/" element={<POSSystem />} />
           <Route path="/products" element={<ProductManagement />} />
+          <Route path="/sales" element={<SalesHistory />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
 

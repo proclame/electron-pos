@@ -303,6 +303,20 @@ function POSSystem() {
       setIsSuspendedBarcodeInput(false);
     };
   
+    // Update the state change for modal
+    const openHoldModal = () => {
+        if (suspendTimeoutRef.current) {
+            clearTimeout(suspendTimeoutRef.current);
+        }
+        setIsSuspendedBarcodeInput(true);
+        setIsHoldModalOpen(true);
+    };
+
+    const closeHoldModal = () => {
+        setIsHoldModalOpen(false);
+        setIsSuspendedBarcodeInput(false);
+    };
+  
     return (
       <div style={styles.container}>
         <div style={styles.scannerSection}>
@@ -449,7 +463,7 @@ function POSSystem() {
               </div>
               <div style={styles.cartButtons}>
                 <button 
-                  onClick={() => setIsHoldModalOpen(true)}
+                  onClick={openHoldModal}
                   style={styles.holdButton}
                   disabled={cart.length === 0}
                 >
@@ -476,10 +490,10 @@ function POSSystem() {
   
         <HoldNoteModal 
           isOpen={isHoldModalOpen}
-          onClose={() => setIsHoldModalOpen(false)}
+          onClose={closeHoldModal}
           onConfirm={(notes) => {
             handlePutOnHold(notes);
-            setIsHoldModalOpen(false);
+            closeHoldModal();
           }}
         />
       </div>

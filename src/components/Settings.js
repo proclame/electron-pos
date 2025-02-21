@@ -38,7 +38,7 @@ function Settings() {
 
     const fetchPrinters = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/printers');
+            const response = await fetch('http://localhost:5001/api/settings/printers');
             if (response.ok) {
                 const data = await response.json();
                 setPrinters(data);

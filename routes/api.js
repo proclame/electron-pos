@@ -6,20 +6,16 @@ const PrinterService = require('../services/PrinterService');
 
 const productsRouter = require('./products');
 const salesRouter = require('./sales');
+const activeSalesRouter = require('./active-sales');
+const printRouter = require('./print');
+const settingsRouter = require('./settings');
 
 router.use('/products', productsRouter);
 router.use('/sales', salesRouter);
+router.use('/active-sales', activeSalesRouter);
+router.use('/', printRouter);
+router.use('/settings', settingsRouter);
 
-// Add to your existing API routes
-router.get('/printers', async (req, res) => {
-    try {
-        const printers = await PrinterService.getAvailablePrinters();
-        res.json(printers);
-    } catch (error) {
-        console.error('Error getting printers:', error);
-        res.status(500).json({ message: 'Error getting printers' });
-    }
-});
 
 router.post('/print/receipt', async (req, res) => {
     try {
@@ -29,52 +25,6 @@ router.post('/print/receipt', async (req, res) => {
     } catch (error) {
         console.error('Error printing receipt:', error);
         res.status(500).json({ message: 'Error printing receipt' });
-    }
-});
-
-router.get('/settings', (req, res) => {
-    try {
-        const settings = db.prepare('SELECT key, value FROM settings').all();
-        // Convert array of key-value pairs to object
-        const settingsObject = settings.reduce((obj, item) => {
-            obj[item.key] = item.value;
-            return obj;
-        }, {});
-        res.json(settingsObject);
-    } catch (error) {
-        console.error('Error fetching settings:', error);
-        res.status(500).json({ message: 'Error fetching settings' });
-    }
-});
-
-router.put('/settings', (req, res) => {
-    try {
-        const settings = req.body;
-        
-        // Create the update statement once
-        const updateSetting = db.prepare(`
-            UPDATE settings 
-            SET value = ?
-            WHERE key = ?
-        `);
-
-        // Use a transaction to update all settings
-        const updateMany = db.transaction((settings) => {
-            Object.entries(settings).forEach(([key, value]) => {
-                updateSetting.run(value.toString(), key);
-            });
-        });
-
-        // Execute the transaction
-        updateMany(settings);
-
-        // Clear the cached settings in PrinterService
-        PrinterService.clearSettingsCache();
-        
-        res.json({ message: 'Settings updated successfully' });
-    } catch (error) {
-        console.error('Error updating settings:', error);
-        res.status(500).json({ message: 'Error updating settings' });
     }
 });
 
@@ -209,6 +159,5 @@ router.delete('/active-sales/:id', (req, res) => {
         res.status(500).json({ message: 'Error deleting sale' });
     }
 });
-
 
 module.exports = router; 
