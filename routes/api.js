@@ -13,20 +13,8 @@ const settingsRouter = require('./settings');
 router.use('/products', productsRouter);
 router.use('/sales', salesRouter);
 router.use('/active-sales', activeSalesRouter);
-router.use('/', printRouter);
+router.use('/print', printRouter);
 router.use('/settings', settingsRouter);
-
-
-router.post('/print/receipt', async (req, res) => {
-    try {
-        const sale = req.body;
-        await PrinterService.printReceipt(sale);
-        res.json({ message: 'Receipt printed successfully' });
-    } catch (error) {
-        console.error('Error printing receipt:', error);
-        res.status(500).json({ message: 'Error printing receipt' });
-    }
-});
 
 // Add new search endpoint
 router.get('/products/search', (req, res) => {

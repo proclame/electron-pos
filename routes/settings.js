@@ -3,17 +3,6 @@ const router = express.Router();
 const { db } = require('../models/database');
 const PrinterService = require('../services/PrinterService');
 
-// Get available printers
-router.get('/printers', async (req, res) => {
-    try {
-        const printers = await PrinterService.getAvailablePrinters();
-        res.json(printers);
-    } catch (error) {
-        console.error('Error getting printers:', error);
-        res.status(500).json({ message: 'Error getting printers' });
-    }
-});
-
 router.get('/', (req, res) => {
     try {
         const settings = db.prepare('SELECT key, value FROM settings').all();
@@ -60,5 +49,15 @@ router.put('/', (req, res) => {
     }
 });
 
+// Get available printers
+router.get('/printers', async (req, res) => {
+    try {
+        const printers = await PrinterService.getAvailablePrinters();
+        res.json(printers);
+    } catch (error) {
+        console.error('Error getting printers:', error);
+        res.status(500).json({ message: 'Error getting printers' });
+    }
+});
 
 module.exports = router; 
