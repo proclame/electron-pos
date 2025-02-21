@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
 import SalesManager from './components/SalesManager';
 import POSSystem from './components/POSSystem';
 import SalesHistory from './components/SalesHistory';
-import { SalesProvider, useSales } from './contexts/SalesContext';
+import { SalesProvider } from './contexts/SalesContext';
 
 function App() {
   return (
