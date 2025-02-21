@@ -2,6 +2,10 @@
   "name": "electron-pos",
   "version": "1.0.0",
   "main": "public/electron.js",
+  "description": "A simple POS system built with Electron and React",
+  "author": "Nick Mispoulier <nick.mispoulier@zumbawear.eu>",
+  "license": "UNLICENSED",
+  "repository": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -15,18 +19,18 @@
     "cors": "^2.8.5",
     "csv-parse": "^5.6.0",
     "electron-is-dev": "^2.0.0",
-    "express": "^4.17.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^7.1.5"
+    "express": "^4.21.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.2.0"
   },
   "devDependencies": {
-    "concurrently": "^7.6.0",
+    "@electron/rebuild": "^3.7.1",
+    "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^17.4.11",
-    "electron-rebuild": "^3.2.9",
     "react-scripts": "5.0.1",
-    "wait-on": "^6.0.1"
+    "wait-on": "^8.0.2"
   },
   "browserslist": {
     "production": [
