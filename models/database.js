@@ -1,6 +1,6 @@
 const Database = require('better-sqlite3');
-const path = require('path');
 const runMigrations = require('../migrations/migrationManager');
+const path = require('path');
 
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new Database(dbPath, {
