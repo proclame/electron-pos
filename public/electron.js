@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
 const express = require('express');
 const cors = require('cors');
 const { initDatabase } = require('../models/database');
@@ -13,6 +12,7 @@ const PORT = 5001;
 
 // Initialize database and get prepared statements
 let dbStatements;
+let mainWindow;
 
 // Middleware
 expressApp.use(cors());
@@ -20,7 +20,6 @@ expressApp.use(express.json({ limit: '10mb' }));
 
 // Routes
 expressApp.use('/api', apiRouter);
-
 
 // Initialize database before starting the server
 async function startServer() {
@@ -35,10 +34,11 @@ async function startServer() {
     }
 }
 
-let mainWindow;
-
 async function createWindow() {
     try {
+        // Import electron-is-dev dynamically
+        const isDev = await import('electron-is-dev').then(module => module.default);
+        
         // Start Express server
         await startServer();
         console.log('Server started successfully');
@@ -81,7 +81,7 @@ app.on('window-all-closed', () => {
         server.close();
     }
     if (process.platform !== 'darwin') {
-       app.quit();
+        app.quit();
     }
 });
 
