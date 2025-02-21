@@ -101,4 +101,26 @@ router.post('/import', (req, res) => {
     }
 });
 
+router.get('/search', (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.json({ products: [] });
+        }
+
+        const searchTerm = `%${query}%`;
+        const products = db.prepare(`
+            SELECT * FROM products 
+            WHERE name LIKE ? 
+            OR product_code LIKE ?
+            LIMIT 20
+        `).all(searchTerm, searchTerm);
+
+        res.json({ products });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({ message: 'Error searching products' });
+    }
+});
+
 module.exports = router; 

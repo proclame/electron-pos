@@ -47,11 +47,10 @@ export function SalesProvider({ children }) {
 
     const putSaleOnHold = async (sale, notes = '') => {
         try {
-            const response = await fetch('http://localhost:5001/api/active-sales/hold', {
+            const response = await fetch(`http://localhost:5001/api/active-sales/${currentSaleId}/hold`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id: currentSaleId,
                     notes: notes
                 })
             });
@@ -84,7 +83,7 @@ export function SalesProvider({ children }) {
             const saleToResume = salesOnHold.find(s => s.id === saleId);
             if (!saleToResume) return false;
 
-            const response = await fetch('http://localhost:5001/api/active-sales/resume', {
+            const response = await fetch(`http://localhost:5001/api/active-sales/${saleId}/resume`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

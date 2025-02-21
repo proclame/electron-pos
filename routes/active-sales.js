@@ -60,6 +60,30 @@ router.get('/:id', (req, res) => {
     }
 });
 
+
+router.put('/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const { cart_data, status, notes } = req.body;
+        
+        const result = db.prepare(`
+            UPDATE active_sales 
+            SET cart_data = ?, status = ?, notes = ?
+            WHERE id = ?
+        `).run(JSON.stringify(cart_data), status, notes, id);
+        
+        if (result.changes > 0) {
+            res.json({ message: 'Sale updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        console.error('Error updating active sale:', error);
+        res.status(500).json({ message: 'Error updating sale' });
+    }
+});
+
+
 // Update active sale status (put on hold)
 router.put('/:id/hold', (req, res) => {
     try {
@@ -68,7 +92,7 @@ router.put('/:id/hold', (req, res) => {
         
         const result = db.prepare(`
             UPDATE active_sales 
-            SET status = 'hold', notes = ?
+            SET status = 'on_hold', notes = ?
             WHERE id = ?
         `).run(notes, id);
         
