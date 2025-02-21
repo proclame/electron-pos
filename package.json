@@ -13,7 +13,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron-dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"wait-on http://127.0.0.1:3000/ && electron .\"",
-    "postinstall": "electron-rebuild -f -w better-sqlite3"
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "electron-build": "electron-builder",
+    "release": "npm run build && electron-builder --publish=never"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
@@ -30,6 +32,7 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^34.2.0",
+    "electron-builder": "^25.1.8",
     "react-scripts": "5.0.1",
     "wait-on": "^8.0.2"
   },
@@ -43,6 +46,30 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "build": {
+    "appId": "com.electron.pos",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "public/electron.js",
+      "src/server/**/*",
+      "src/electron/**/*",
+      "src/config/**/*",
+      "models/**/*",
+      "routes/**/*",
+      "services/**/*",
+      "migrations/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "extraResources": [
+      {
+        "from": "models/database.sqlite",
+        "to": "database.sqlite"
+      }
     ]
   }
 }

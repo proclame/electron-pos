@@ -3,6 +3,8 @@ const runMigrations = require('../migrations/migrationManager');
 const path = require('path');
 
 const dbPath = path.join(__dirname, 'database.sqlite');
+// const dbPath = path.join("/Users/nick/Sites/electron-cash-register/dist/mac", 'database.sqlite');
+
 const db = new Database(dbPath, {
     verbose: console.log // Remove in production
 });
