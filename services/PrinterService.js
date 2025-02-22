@@ -33,15 +33,6 @@ class PrinterService {
             return;
         }
 
-        if (this.platform === 'darwin') {
-            return this.printReceiptMac(sale);
-        } else {
-            console.log('Printing is only supported on macOS for now');
-            return;
-        }
-    }
-
-    async printReceiptMac(sale) {
         try {
             if (!this.settings.selected_printer) {
                 throw new Error('No printer selected in settings');

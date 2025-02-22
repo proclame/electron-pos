@@ -2,6 +2,7 @@
   "name": "electron-pos",
   "version": "1.0.0",
   "main": "public/electron.js",
+  "homepage": "./",
   "description": "A simple POS system built with Electron and React",
   "author": "Nick Mispoulier <nick.mispoulier@zumbawear.eu>",
   "license": "UNLICENSED",
@@ -32,7 +33,7 @@
     "@electron/rebuild": "^3.7.1",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "electron": "^34.2.0",
+    "electron": "^24.8.8",
     "electron-builder": "^25.1.8",
     "react-scripts": "5.0.1",
     "wait-on": "^8.0.2"
