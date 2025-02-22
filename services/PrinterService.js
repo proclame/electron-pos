@@ -67,16 +67,13 @@ class PrinterService {
             const result = theWindow.webContents.print({
                 silent: true,
                 printBackground: true,
+                // scaleFactor: 100,
+                scaleFactor: 250,
                 deviceName: this.printerName,
                 color: false,
-                margins: { marginType: 'custom', top: 0, bottom: 10, left: 0, right: 10 },
-                mediaSize: {
-                    name: 'CUSTOM',
-                    width_microns: 80000,
-                    height_microns: 200000,
-                    custom_display_name: 'Receipt'
-                },
-                dpi: { horizontal: 203, vertical: 203 },
+                margins: { marginType: 'custom', top: 0, bottom: 0, left: 0, right: 0 },
+                // pageSize: { width: 80_000, height: 200_000 },
+                pageSize: 'A4',
             }, function(success, failureReason) {
                 if (!success) {
                     console.error('Print failed:', failureReason);
@@ -106,14 +103,13 @@ class PrinterService {
             <!DOCTYPE html>
             <html>
             <head>
-                <meta http-equiv="Content-Security-Policy" 
-                      content="default-src 'self' 'unsafe-inline' data: http://localhost:5001">
+                <meta charset="utf-8">
                 <style>
                     body {
-                        font-family: 'Arial', sans-serif;
-                        width: 80mm;
+                        font-family: Arial, sans-serif;
+                        padding: 0;
                         margin: 0;
-                        padding: 5mm;
+                        width: 100%;
                         font-size: 12px;
                     }
                     .center { text-align: center; }
@@ -122,23 +118,23 @@ class PrinterService {
                     table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin: 5mm 0;
+                        margin: 10px 0;
                     }
                     th, td {
                         text-align: left;
-                        padding: 1mm;
+                        padding: 4px;
                         font-size: 12px;
                     }
                     .divider {
                         border-top: 1px dashed #000;
-                        margin: 3mm 0;
+                        margin: 15px 0;
                     }
                     .logo {
-                        max-width: 200px;
+                        max-width: 80%;
                         max-height: 100px;
                         margin: 0 auto;
                         display: block;
-                        margin-bottom: 5mm;
+                        margin-bottom: 20px;
                     }
                 </style>
             </head>
