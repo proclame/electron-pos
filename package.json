@@ -15,7 +15,8 @@
     "electron-dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"wait-on http://127.0.0.1:3000/ && electron .\"",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "electron-build": "electron-builder",
-    "release": "npm run build && electron-builder --publish=never"
+    "release": "npm run build && electron-builder --publish=never",
+    "release2": "electron-builder --publish=never"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
@@ -53,7 +54,7 @@
     "files": [
       "build/**/*",
       "node_modules/**/*",
-      "public/electron.js",
+      "pulbic/electron.js",
       "src/server/**/*",
       "src/electron/**/*",
       "src/config/**/*",

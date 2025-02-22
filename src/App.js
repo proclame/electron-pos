@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
 import SalesManager from './components/SalesManager';
@@ -8,6 +8,7 @@ import SalesHistory from './components/SalesHistory';
 import { SalesProvider } from './contexts/SalesContext';
 
 function App() {
+
   return (
     <SalesProvider>
       <Router>

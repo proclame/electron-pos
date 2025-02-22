@@ -1,8 +1,11 @@
 const Database = require('better-sqlite3');
 const runMigrations = require('../migrations/migrationManager');
 const path = require('path');
+const { app } = require('electron');
 
-const dbPath = path.join(__dirname, 'database.sqlite');
+// const dbPath = path.join(__dirname, 'database.sqlite');
+const dbPath = path.join(app.getPath('downloads'), 'database.sqlite');
+console.log(dbPath);
 // const dbPath = path.join("/Users/nick/Sites/electron-cash-register/dist/mac", 'database.sqlite');
 
 const db = new Database(dbPath, {
