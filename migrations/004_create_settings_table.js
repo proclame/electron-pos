@@ -24,6 +24,7 @@ const createSettingsTable = `
         ('thank_you_text', 'Thank you for your business!'),
         ('logo_base64', ''),
         ('use_printer', 'true'),
+        ('allow_returns', 'true'),
         ('selected_printer', '');
 `;
 

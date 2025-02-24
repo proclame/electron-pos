@@ -5,6 +5,8 @@ import { useSales } from '../contexts/SalesContext';
 
 function POSSystem() {
     const { currentSale, setCurrentSale, putSaleOnHold, setCurrentSaleId, currentSaleId } = useSales();
+    const [isReturn, setIsReturn] = useState(false);
+    const [settings, setSettings] = useState(null);
     const [barcodeInput, setBarcodeInput] = useState('');
     const [editingQuantity, setEditingQuantity] = useState(null);
     const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
@@ -159,6 +161,7 @@ function POSSystem() {
       setTotal(0);
       setNotes('');
       setNeedsInvoice(false);
+      setIsReturn(false);
       if(fullClear) {
         setCurrentSale(null);
       }
@@ -183,7 +186,7 @@ function POSSystem() {
               },
               body: JSON.stringify(saleData)
           });
-  
+
           if (response.ok) {
               const { id } = await response.json();
               
@@ -317,23 +320,57 @@ function POSSystem() {
         setIsSuspendedBarcodeInput(false);
     };
   
+    // Load settings
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const response = await fetch('http://localhost:5001/api/settings');
+                if (response.ok) {
+                    const data = await response.json();
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        };
+        loadSettings();
+    }, []);
+  
+    // Add a function to toggle return mode
+    const toggleReturnMode = () => {
+            setIsReturn(!isReturn);
+    };
+  
     return (
       <div style={styles.container}>
-        <div style={styles.scannerSection}>
-          <form onSubmit={handleBarcodeSubmit}>
-            <input
-              ref={barcodeInputRef}
-              type="text"
-              value={barcodeInput}
-              onChange={handleBarcodeChange}
-              onBlur={handleBarcodeBlur}
-              placeholder="Scan barcode..."
-              style={styles.barcodeInput}
-              autoComplete="off"
-            />
-          </form>
-        </div>
-        <div style={styles.searchContainer}>
+        <div style={styles.leftPanel}>
+          {settings?.allow_returns === 'true' && (
+              <div style={styles.returnToggle}>
+                  <button
+                      onClick={toggleReturnMode}
+                      style={{
+                          ...styles.returnButton,
+                          ...(isReturn ? styles.returnButtonActive : {})
+                      }}
+                  >
+                      {isReturn ? 'Switch to Sale Mode' : 'Switch to Return Mode'}
+                  </button>
+              </div>
+          )}
+          <div style={styles.barcodeSection}>
+            <form onSubmit={handleBarcodeSubmit}>
+              <input
+                ref={barcodeInputRef}
+                type="text"
+                value={barcodeInput}
+                onChange={handleBarcodeChange}
+                onBlur={handleBarcodeBlur}
+                placeholder="Scan barcode..."
+                style={styles.barcodeInput}
+                autoComplete="off"
+              />
+            </form>
+          </div>
           <ProductSearch 
               onProductSelect={(product) => {
                   addProductToCart(product);
@@ -353,141 +390,144 @@ function POSSystem() {
               }}
           />
         </div>
-  
-  
-        <div style={styles.mainContent}>
-         
-          <div style={styles.cartSection}>
-            <h2>Current Cart: {currentSaleId}</h2>
-            <div style={styles.cartItems}>
-              <table style={styles.cartTable}>
-                  <thead>
-                      <tr>
-                          <th>Product</th>
-                          <th>Price</th>
-                          <th>Quantity</th>
-                          <th>Total</th>
-                          <th>Actions</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {cart.map((item, index) => (
-                          <tr key={index}>
-                              <td>{item.product.name}</td>
-                              <td>
-                                  {editingPrice === index ? (
-                                      <form onSubmit={handlePriceSubmit}>
-                                          <input
-                                              type="number"
-                                              value={priceInputValue}
-                                              onChange={(e) => setPriceInputValue(e.target.value)}
-                                              onBlur={handlePriceSubmit}
-                                              step="0.01"
-                                              min="0"
-                                              style={styles.quantityInput}
-                                              autoFocus
-                                          />
-                                      </form>
-                                  ) : (
-                                      <span 
-                                          onDoubleClick={() => handlePriceClick(index)}
-                                          style={styles.editableField}
-                                      >
-                                          €{item.product.unit_price.toFixed(2)}
-                                      </span>
-                                  )}
-                              </td>
-                              <td>
-                                  {editingQuantity === index ? (
-                                      <input
-                                          type="number"
-                                          value={quantityInputValue}
-                                          onChange={(e) => setQuantityInputValue(e.target.value)}
-                                          onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
-                                          onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                  finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
-                                              } else if (e.key === 'Escape') {
-                                                  cancelEditingQuantity();
-                                              }
-                                          }}
-                                          autoFocus
-                                          style={styles.quantityInput}
-                                          min="1"
-                                      />
-                                  ) : (
-                                      <span 
-                                          style={styles.cartItemQuantity}
-                                          onDoubleClick={() => startEditingQuantity(index)}
-                                      >
-                                          x{item.quantity}
-                                      </span>
-                                  )}
-                              </td>
-                              <td>€{(item.quantity * item.product.unit_price).toFixed(2)}</td>
-                              <td>
-                                  <button
-                                      onClick={() => removeFromCart(index)}
-                                      style={styles.removeButton}
-                                  >
-                                      Remove
-                                  </button>
-                              </td>
-                          </tr>
-                      ))}
-                  </tbody>
-              </table>
-            </div>
-            <div style={styles.total}>
-              <h3>Total: €{total.toFixed(2)}</h3>
-              <div style={styles.checkoutFields}>
-                <div style={styles.invoiceField}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={needsInvoice}
-                      onChange={(e) => setNeedsInvoice(e.target.checked)}
-                      style={styles.checkbox}
-                    />
-                    Invoice needed
-                  </label>
-                </div>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  onFocus={handleNotesFieldFocus}
-                  onBlur={handleNotesFieldBlur}
-                  placeholder="Add notes..."
-                  style={styles.notesField}
-                />
+        <div style={styles.rightPanel}>
+          {isReturn && (
+              <div style={styles.returnWarning}>
+                  Return Mode Active
               </div>
-              <div style={styles.cartButtons}>
-                <button 
-                  onClick={openHoldModal}
-                  style={styles.holdButton}
-                  disabled={cart.length === 0}
-                >
-                  Put on Hold
-                </button>
-                <button 
-                  onClick={clearCart}
-                  style={styles.clearButton}
-                  disabled={cart.length === 0}
-                >
-                  Clear Cart
-                </button>
-                <button 
-                  onClick={handleCheckout}
-                  style={styles.checkoutButton}
-                  disabled={cart.length === 0}
-                >
-                  Checkout
-                </button>
+          )}
+          <div style={styles.cartContainer}>
+            <div style={styles.cartSection}>
+              <h2>Current Cart: {currentSaleId}</h2>
+              <div style={styles.cartItems}>
+                <table style={styles.cartTable}>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {cart.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.product.name}</td>
+                                <td>
+                                    {editingPrice === index ? (
+                                        <form onSubmit={handlePriceSubmit}>
+                                            <input
+                                                type="number"
+                                                value={priceInputValue}
+                                                onChange={(e) => setPriceInputValue(e.target.value)}
+                                                onBlur={handlePriceSubmit}
+                                                step="0.01"
+                                                min="0"
+                                                style={styles.quantityInput}
+                                                autoFocus
+                                            />
+                                        </form>
+                                    ) : (
+                                        <span 
+                                            onDoubleClick={() => handlePriceClick(index)}
+                                            style={styles.editableField}
+                                        >
+                                            €{item.product.unit_price.toFixed(2)}
+                                        </span>
+                                    )}
+                                </td>
+                                <td>
+                                    {editingQuantity === index ? (
+                                        <input
+                                            type="number"
+                                            value={quantityInputValue}
+                                            onChange={(e) => setQuantityInputValue(e.target.value)}
+                                            onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
+                                                } else if (e.key === 'Escape') {
+                                                    cancelEditingQuantity();
+                                                }
+                                            }}
+                                            autoFocus
+                                            style={styles.quantityInput}
+                                            min="1"
+                                        />
+                                    ) : (
+                                        <span 
+                                            style={styles.cartItemQuantity}
+                                            onDoubleClick={() => startEditingQuantity(index)}
+                                        >
+                                          x{item.quantity}
+                                        </span>
+                                    )}
+                                </td>
+                              <td>€{(item.quantity * item.product.unit_price).toFixed(2)}</td>
+                                <td>
+                                    <button
+                                        onClick={() => removeFromCart(index)}
+                                        style={styles.removeButton}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+              </div>
+              <div style={styles.total}>
+              <h3>Total: €{total.toFixed(2)}</h3>
+                <div style={styles.checkoutFields}>
+                  <div style={styles.invoiceField}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={needsInvoice}
+                        onChange={(e) => setNeedsInvoice(e.target.checked)}
+                        style={styles.checkbox}
+                      />
+                      Invoice needed
+                    </label>
+                  </div>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    onFocus={handleNotesFieldFocus}
+                    onBlur={handleNotesFieldBlur}
+                    placeholder="Add notes..."
+                    style={styles.notesField}
+                  />
+                </div>
+                <div style={styles.cartButtons}>
+                  <button 
+                    onClick={openHoldModal}
+                    style={styles.holdButton}
+                    disabled={cart.length === 0}
+                  >
+                    Put on Hold
+                  </button>
+                  <button 
+                    onClick={clearCart}
+                    style={styles.clearButton}
+                    disabled={cart.length === 0}
+                  >
+                    Clear Cart
+                  </button>
+                  <button 
+                    onClick={handleCheckout}
+                    style={styles.checkoutButton}
+                    disabled={cart.length === 0}
+                  >
+                    Checkout
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-  
         <HoldNoteModal 
           isOpen={isHoldModalOpen}
           onClose={closeHoldModal}
@@ -500,14 +540,22 @@ function POSSystem() {
     );
   }
 
-
 const styles = {
     container: {
       padding: '20px',
       maxWidth: '1200px',
-      margin: '0 auto'
+      margin: '0 auto',
+      display: 'flex',
+      gap: '20px'
     },
-    scannerSection: {
+    leftPanel: {
+      flex: '1',
+      padding: '20px',
+      backgroundColor: 'white',
+      borderRadius: '5px',
+      border: '1px solid #ddd'
+    },
+    barcodeSection: {
       marginBottom: '20px',
       padding: '20px',
       backgroundColor: '#f8f9fa',
@@ -521,16 +569,18 @@ const styles = {
       borderRadius: '4px',
       textAlign: 'center'
     },
-    mainContent: {
-      display: 'flex',
-      gap: '20px'
-    },
-    cartSection: {
+    rightPanel: {
       flex: '1',
       padding: '20px',
       backgroundColor: 'white',
       borderRadius: '5px',
       border: '1px solid #ddd'
+    },
+    cartContainer: {
+      marginBottom: '20px'
+    },
+    cartSection: {
+      marginBottom: '20px'
     },
     cartItems: {
       marginBottom: '20px'
@@ -675,6 +725,34 @@ const styles = {
     cartTable: {
       width: '100%',
       borderCollapse: 'collapse'
+    },
+    returnToggle: {
+      marginBottom: '20px'
+    },
+    returnButton: {
+      width: '100%',
+      padding: '12px',
+      fontSize: '16px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      backgroundColor: '#f0f0f0',
+      color: '#333',
+      transition: 'all 0.3s ease'
+    },
+    returnButtonActive: {
+      backgroundColor: '#dc3545',
+      color: 'white'
+    },
+    returnWarning: {
+      backgroundColor: '#dc3545',
+      color: 'white',
+      padding: '10px',
+      textAlign: 'center',
+      borderRadius: '4px',
+      marginBottom: '20px',
+      fontSize: '16px',
+      fontWeight: 'bold'
     }
   };
 

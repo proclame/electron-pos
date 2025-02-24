@@ -10,11 +10,19 @@ function Settings() {
         thank_you_text: 'Thank you for your business!',
         logo_base64: '',
         use_printer: true,
+        allow_returns: true,
         selected_printer: ''
     });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
     const [printers, setPrinters] = useState([]);
+
+    const handleChange = (key, value) => {
+        setSettings(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
 
     useEffect(() => {
         fetchSettings();
@@ -75,14 +83,6 @@ function Settings() {
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setSettings(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     const handleLogoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -115,7 +115,7 @@ function Settings() {
                         id="company_name"
                         name="company_name"
                         value={settings.company_name}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('company_name', e.target.value)}
                         style={styles.input}
                         required
                     />
@@ -127,7 +127,7 @@ function Settings() {
                         id="company_address"
                         name="company_address"
                         value={settings.company_address}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('company_address', e.target.value)}
                         style={styles.textarea}
                         rows="4"
                     />
@@ -140,7 +140,7 @@ function Settings() {
                         id="vat_number"
                         name="vat_number"
                         value={settings.vat_number}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('vat_number', e.target.value)}
                         style={styles.input}
                     />
                 </div>
@@ -152,7 +152,7 @@ function Settings() {
                         id="vat_percentage"
                         name="vat_percentage"
                         value={settings.vat_percentage}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('vat_percentage', e.target.value)}
                         style={styles.input}
                         step="0.1"
                         min="0"
@@ -168,7 +168,7 @@ function Settings() {
                         id="currency_symbol"
                         name="currency_symbol"
                         value={settings.currency_symbol}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('currency_symbol', e.target.value)}
                         style={styles.input}
                         maxLength="3"
                         required
@@ -181,7 +181,7 @@ function Settings() {
                         id="thank_you_text"
                         name="thank_you_text"
                         value={settings.thank_you_text}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange('thank_you_text', e.target.value)}
                         style={styles.textarea}
                         rows="4"
                         required
@@ -219,42 +219,55 @@ function Settings() {
                     </div>
                 </div>
 
-                <div style={styles.formGroup}>
-                    <label>
-                        <input
-                            type="checkbox"
-                            name="use_printer"
-                            checked={settings.use_printer === 'true'}
-                            onChange={(e) => setSettings(prev => ({
-                                ...prev,
-                                use_printer: e.target.checked.toString()
-                            }))}
-                            style={styles.checkbox}
-                        />
-                        Enable Printer
-                    </label>
+                <div style={styles.section}>
+                    <h3>Printer Settings</h3>
+                    <div style={styles.formGroup}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={settings.use_printer === 'true'}
+                                onChange={(e) => handleChange('use_printer', e.target.checked.toString())}
+                                style={styles.checkbox}
+                            />
+                            Enable Receipt Printing
+                        </label>
+                    </div>
+                    {settings.use_printer === 'true' && (
+                        <div style={styles.formGroup}>
+                            <label>Select Printer:</label>
+                            <select
+                                value={settings.selected_printer}
+                                onChange={(e) => handleChange('selected_printer', e.target.value)}
+                                style={styles.select}
+                            >
+                                <option value="">Select a printer...</option>
+                                {printers.map(printer => (
+                                    <option key={printer.name} value={printer.name}>
+                                        {printer.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
 
-                {settings.use_printer === 'true' && (
+                <div style={styles.section}>
+                    <h3>Sales Settings</h3>
                     <div style={styles.formGroup}>
-                        <label htmlFor="selected_printer">Select Printer</label>
-                        <select
-                            id="selected_printer"
-                            name="selected_printer"
-                            value={settings.selected_printer}
-                            onChange={handleChange}
-                            style={styles.select}
-                            required={settings.use_printer === 'true'}
-                        >
-                            <option value="">Select a printer</option>
-                            {printers.map(printer => (
-                                <option key={printer.name} value={printer.name}>
-                                    {printer.name}
-                                </option>
-                            ))}
-                        </select>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={settings.allow_returns === 'true'}
+                                onChange={(e) => handleChange('allow_returns', e.target.checked.toString())}
+                                style={styles.checkbox}
+                            />
+                            Enable Returns
+                        </label>
+                        <div style={styles.helpText}>
+                            Allow processing of returns in the POS system
+                        </div>
                     </div>
-                )}
+                </div>
 
                 {message && (
                     <div style={styles.message}>
@@ -262,13 +275,15 @@ function Settings() {
                     </div>
                 )}
 
-                <button 
-                    type="submit" 
-                    style={styles.button}
-                    disabled={isSaving}
-                >
-                    {isSaving ? 'Saving...' : 'Save Settings'}
-                </button>
+                <div style={styles.buttonContainer}>
+                    <button 
+                        type="submit" 
+                        style={styles.button}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? 'Saving...' : 'Save Settings'}
+                    </button>
+                </div>
             </form>
         </div>
     );
@@ -355,6 +370,18 @@ const styles = {
         borderRadius: '4px',
         border: '1px solid #ddd',
         backgroundColor: 'white'
+    },
+    section: {
+        marginTop: '20px'
+    },
+    helpText: {
+        fontSize: '14px',
+        color: '#666',
+        marginTop: '4px',
+        marginLeft: '24px'
+    },
+    buttonContainer: {
+        textAlign: 'center'
     }
 };
 
