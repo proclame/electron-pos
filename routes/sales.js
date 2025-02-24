@@ -148,4 +148,29 @@ router.get('/:id', (req, res) => {
     }
 });
 
+// Update sale details
+router.put('/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const { notes, needs_invoice } = req.body;
+        
+        const result = db.prepare(`
+            UPDATE sales 
+            SET notes = ?, 
+                needs_invoice = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(notes, needs_invoice ? 1 : 0, id);
+        
+        if (result.changes > 0) {
+            res.json({ message: 'Sale updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        console.error('Error updating sale:', error);
+        res.status(500).json({ message: 'Error updating sale' });
+    }
+});
+
 module.exports = router; 

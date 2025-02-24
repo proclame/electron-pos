@@ -97,7 +97,7 @@ function SalesHistory() {
                         <th>Sale ID</th>
                         <th>Date</th>
                         <th>Items</th>
-                        <th>Total</th>
+                        <th style={{textAlign: 'right', paddingRight: '20px'}}>Total</th>
                         <th>Payment Method</th>
                         <th>Invoice</th>
                         <th>Actions</th>
@@ -106,13 +106,13 @@ function SalesHistory() {
                 <tbody>
                     {sales.map(sale => (
                         <tr key={sale.id}>
-                            <td>{sale.id}</td>
+                            <td style={{textAlign: 'center'}}>#{sale.id}</td>
                             <td>{formatDate(sale.created_at)}</td>
-                            <td>{sale.items.length} items</td>
-                            <td>€{sale.total.toFixed(2)}</td>
-                            <td>{sale.payment_method}</td>
-                            <td>{sale.needs_invoice ? 'Yes' : 'No'}</td>
-                            <td>
+                            <td style={{textAlign: 'center'}}>{sale.items.length}</td>
+                            <td style={{textAlign: 'right', paddingRight: '20px'}}>€{sale.total.toFixed(2)}</td>
+                            <td style={{textAlign: 'center'}}>{sale.payment_method}</td>
+                            <td style={{textAlign: 'center'}}>{sale.needs_invoice ? 'Yes' : 'No'}</td>
+                            <td style={{textAlign: 'center'}}>
                                 <button 
                                     onClick={() => handleViewSale(sale.id)}
                                     style={styles.button}
