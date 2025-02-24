@@ -114,6 +114,42 @@ router.get('/', (req, res) => {
     }
 });
 
+// Get sales grouped by product
+router.get('/by-product', (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        
+        let whereClause = '';
+        let params = [];
+
+        if (startDate && endDate) {
+            whereClause = 'WHERE s.created_at BETWEEN ? AND ?';
+            params = [startDate, endDate + ' 23:59:59'];
+        }
+
+        const query = `
+            SELECT 
+                p.id as product_id,
+                p.product_code,
+                p.name as product_name,
+                SUM(si.quantity) as total_quantity,
+                SUM(si.total) as total_revenue
+            FROM sale_items si
+            JOIN products p ON si.product_id = p.id
+            JOIN sales s ON si.sale_id = s.id
+            ${whereClause}
+            GROUP BY p.id, p.product_code, p.name
+            ORDER BY total_revenue DESC
+        `;
+
+        const results = db.prepare(query).all(...params);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching product sales:', error);
+        res.status(500).json({ message: 'Error fetching product sales' });
+    }
+});
+
 // Get single sale details
 router.get('/:id', (req, res) => {
     try {
@@ -172,5 +208,6 @@ router.put('/:id', (req, res) => {
         res.status(500).json({ message: 'Error updating sale' });
     }
 });
+
 
 module.exports = router; 

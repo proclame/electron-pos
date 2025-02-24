@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import SaleDetailModal from './SaleDetailModal';
 
 function SalesHistory() {
+    const [activeTab, setActiveTab] = useState('sales'); // 'sales' or 'products'
     const [sales, setSales] = useState([]);
+    const [productSales, setProductSales] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -14,8 +16,12 @@ function SalesHistory() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        loadSales();
-    }, [currentPage, dateFilter]);
+        if (activeTab === 'sales') {
+            loadSales();
+        } else {
+            loadProductSales();
+        }
+    }, [currentPage, dateFilter, activeTab]);
 
     const loadSales = async () => {
         try {
@@ -34,6 +40,25 @@ function SalesHistory() {
             }
         } catch (error) {
             console.error('Error loading sales:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadProductSales = async () => {
+        try {
+            const queryParams = new URLSearchParams({
+                startDate: dateFilter.startDate,
+                endDate: dateFilter.endDate
+            });
+
+            const response = await fetch(`http://localhost:5001/api/sales/by-product?${queryParams}`);
+            if (response.ok) {
+                const data = await response.json();
+                setProductSales(data);
+            }
+        } catch (error) {
+            console.error('Error loading product sales:', error);
         } finally {
             setLoading(false);
         }
@@ -73,6 +98,27 @@ function SalesHistory() {
         <div style={styles.container}>
             <h2>Sales History</h2>
             
+            <div style={styles.tabs}>
+                <button
+                    style={{
+                        ...styles.tabButton,
+                        ...(activeTab === 'sales' ? styles.activeTab : {})
+                    }}
+                    onClick={() => setActiveTab('sales')}
+                >
+                    Sales List
+                </button>
+                <button
+                    style={{
+                        ...styles.tabButton,
+                        ...(activeTab === 'products' ? styles.activeTab : {})
+                    }}
+                    onClick={() => setActiveTab('products')}
+                >
+                    Sales by Product
+                </button>
+            </div>
+
             <div style={styles.filters}>
                 <input
                     type="date"
@@ -91,41 +137,66 @@ function SalesHistory() {
                 />
             </div>
 
-            <table style={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Sale ID</th>
-                        <th>Date</th>
-                        <th>Items</th>
-                        <th style={{textAlign: 'right', paddingRight: '20px'}}>Total</th>
-                        <th>Payment Method</th>
-                        <th>Invoice</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sales.map(sale => (
-                        <tr key={sale.id}>
-                            <td style={{textAlign: 'center'}}>#{sale.id}</td>
-                            <td>{formatDate(sale.created_at)}</td>
-                            <td style={{textAlign: 'center'}}>{sale.items.length}</td>
-                            <td style={{textAlign: 'right', paddingRight: '20px'}}>€{sale.total.toFixed(2)}</td>
-                            <td style={{textAlign: 'center'}}>{sale.payment_method}</td>
-                            <td style={{textAlign: 'center'}}>{sale.needs_invoice ? 'Yes' : 'No'}</td>
-                            <td style={{textAlign: 'center'}}>
-                                <button 
-                                    onClick={() => handleViewSale(sale.id)}
-                                    style={styles.button}
-                                >
-                                    View
-                                </button>
-                            </td>
+            {activeTab === 'sales' ? (
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Sale ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th style={{textAlign: 'right', paddingRight: '20px'}}>Total</th>
+                            <th>Payment Method</th>
+                            <th>Invoice</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {sales.map(sale => (
+                            <tr key={sale.id}>
+                                <td style={{textAlign: 'center'}}>#{sale.id}</td>
+                                <td>{formatDate(sale.created_at)}</td>
+                                <td style={{textAlign: 'center'}}>{sale.items.length}</td>
+                                <td style={{textAlign: 'right', paddingRight: '20px'}}>€{sale.total.toFixed(2)}</td>
+                                <td style={{textAlign: 'center'}}>{sale.payment_method}</td>
+                                <td style={{textAlign: 'center'}}>{sale.needs_invoice ? 'Yes' : 'No'}</td>
+                                <td style={{textAlign: 'center'}}>
+                                    <button 
+                                        onClick={() => handleViewSale(sale.id)}
+                                        style={styles.button}
+                                    >
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Product Code</th>
+                            <th>Product Name</th>
+                            <th style={{textAlign: 'center'}}>Quantity Sold</th>
+                            <th style={{textAlign: 'right', paddingRight: '20px'}}>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {productSales.map(product => (
+                            <tr key={product.product_id}>
+                                <td>{product.product_code}</td>
+                                <td>{product.product_name}</td>
+                                <td style={{textAlign: 'center'}}>{product.total_quantity}</td>
+                                <td style={{textAlign: 'right', paddingRight: '20px'}}>
+                                    €{product.total_revenue.toFixed(2)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
-            <div style={styles.pagination}>
+            {activeTab === 'sales' && <div style={styles.pagination}>
                 <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
@@ -143,7 +214,7 @@ function SalesHistory() {
                 >
                     Next
                 </button>
-            </div>
+            </div>}
 
             <SaleDetailModal
                 sale={selectedSale}
@@ -199,6 +270,23 @@ const styles = {
     loading: {
         textAlign: 'center',
         padding: '20px'
+    },
+    tabs: {
+        display: 'flex',
+        gap: '10px',
+        marginBottom: '20px'
+    },
+    tabButton: {
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        backgroundColor: '#f0f0f0',
+        color: '#333'
+    },
+    activeTab: {
+        backgroundColor: '#007bff',
+        color: 'white'
     }
 };
 
