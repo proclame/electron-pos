@@ -4,6 +4,7 @@ const path = require('path');
 const { app } = require('electron');
 const SettingsRepository = require('./settings');
 const ProductsRepository = require('./products');
+const ActiveSalesRepository = require('./active-sales');
 
 const dbPath = path.join(app.getPath('downloads'), 'database.sqlite');
 
@@ -13,6 +14,7 @@ const db = new Database(dbPath, {
 
 const settingsRepo = new SettingsRepository(db);
 const productsRepo = new ProductsRepository(db);
+const activeSalesRepo = new ActiveSalesRepository(db);
 
 async function initDatabase() {
     try {
@@ -27,5 +29,6 @@ module.exports = {
     db,
     initDatabase,
     settingsRepo,
-    productsRepo
+    productsRepo,
+    activeSalesRepo
 }; 

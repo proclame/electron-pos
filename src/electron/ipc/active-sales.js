@@ -1,40 +1,25 @@
 const { ipcMain } = require('electron');
-const { db } = require('../../../models/database');
+const { activeSalesRepo } = require('../../../models/database');
 
 function registerActiveSalesHandlers() {
     ipcMain.handle('active-sales:get-active-sales', async () => {
-      
         try {
-            const activeSales = db.prepare(`
-                SELECT * FROM active_sales 
-                ORDER BY created_at DESC
-            `).all();
+            const sales = await activeSalesRepo.getAll();
 
-            return activeSales.map(sale => ({
+            return sales.map(sale => ({
                 ...sale,
                 cart_data: JSON.parse(sale.cart_data)
             }));
+
         } catch (error) {
-            console.error('Error fetching active sales:', error);
+            console.error('Error getting active sales:', error);
             throw error;
         }
     });
 
-    ipcMain.handle('active-sales:create-active-sale', async (event, cartData) => {
-        console.log('active-sales:create-active-sale', cartData);
+    ipcMain.handle('active-sales:create-active-sale', async (event, sale) => {
         try {
-            const status = 'current';
-            const notes = '';
-
-            const result = db.prepare(`
-                INSERT INTO active_sales (cart_data, status, notes)
-                VALUES (?, ?, ?)
-            `).run(JSON.stringify(cartData), status, notes);
-    
-            return { 
-                id: result.lastInsertRowid,
-                message: 'Active sale created successfully' 
-            };
+            return activeSalesRepo.create(sale);
         } catch (error) {
             console.error('Error creating active sale:', error);
             throw error;
@@ -43,7 +28,7 @@ function registerActiveSalesHandlers() {
 
     ipcMain.handle('active-sales:get-active-sale', async (event, id) => {
         try {
-            const sale = db.prepare('SELECT * FROM active_sales WHERE id = ?').get(id);
+            const sale = await activeSalesRepo.getActiveSale(id);
             return {
                 ...sale,
                 cart_data: JSON.parse(sale.cart_data)
@@ -54,62 +39,41 @@ function registerActiveSalesHandlers() {
         }
     });
 
-    ipcMain.handle('active-sales:update-active-sale', async (event, id, cartData) => {
-        console.log('active-sales:update-active-sale', id, cartData);
+    ipcMain.handle('active-sales:update-active-sale', async (event, saleId, sale) => {
         try {
-            const result = db.prepare(`
-                UPDATE active_sales 
-                SET cart_data = ?
-                WHERE id = ?
-            `).run(JSON.stringify(cartData), id);
-
-            return { ok: true, message: 'Active sale updated successfully' }; 
+            return activeSalesRepo.update(saleId, sale);
         } catch (error) {
             console.error('Error updating active sale:', error);
             throw error;
         }
-    }); 
+    });
 
-    ipcMain.handle('active-sales:delete-active-sale', async (event, id) => {
+    ipcMain.handle('active-sales:delete-active-sale', async (event, saleId) => {
         try {
-            const result = db.prepare('DELETE FROM active_sales WHERE id = ?').run(id);
-            return { ok: true, message: 'Active sale deleted successfully' };
+            return activeSalesRepo.delete(saleId);
         } catch (error) {
             console.error('Error deleting active sale:', error);
             throw error;
         }
     });
 
-    ipcMain.handle('active-sales:put-on-hold', async (event, id, notes = '') => {
+    ipcMain.handle('active-sales:put-on-hold', async (event, saleId, notes = '') => {
         try {
-            const result = db.prepare(`
-                UPDATE active_sales 
-                SET status = 'on_hold', notes = ?
-                WHERE id = ?
-            `).run(notes, id);
-
-            return { ok: true, message: 'Sale put on hold successfully' };
+            return activeSalesRepo.putOnHold(saleId, notes);
         } catch (error) {
             console.error('Error putting sale on hold:', error);
             throw error;
         }
-    }); 
+    });
 
-    ipcMain.handle('active-sales:resume-sale', async (event, id) => {
+    ipcMain.handle('active-sales:resume-sale', async (event, saleId) => {
         try {
-            const result = db.prepare(`
-                UPDATE active_sales 
-                SET status = 'current', notes = ''
-                WHERE id = ?
-            `).run(id);
-
-            return { ok: true, message: 'Sale resumed successfully' };
+            return activeSalesRepo.resume(saleId);
         } catch (error) {
             console.error('Error resuming sale:', error);
             throw error;
         }
     });
-
 }
 
 module.exports = registerActiveSalesHandlers;
