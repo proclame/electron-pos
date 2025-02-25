@@ -23,8 +23,7 @@ function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/products?page=${page}&pageSize=${pageSize}`);
-      const data = await response.json();
+      const data = await window.electronAPI.getProducts({ page, pageSize });
       setProducts(data.products);
       setTotalProducts(data.total);
       setLoading(false);
@@ -57,13 +56,7 @@ function ProductManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5001/api/products/${editingProduct.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await window.electronAPI.updateProduct(editingProduct.id, formData);
 
       if (response.ok) {
         fetchProducts();
@@ -83,14 +76,8 @@ function ProductManagement() {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const response = await fetch('http://localhost:5001/api/products/import', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ csvData: e.target.result })
-          });
-
+          const response = await window.electronAPI.importProducts(e.target.result);
+          console.log('response', response);
           if (response.ok) {
             alert('Products imported successfully');
             fetchProducts();

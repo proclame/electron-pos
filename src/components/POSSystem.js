@@ -94,16 +94,11 @@ function POSSystem() {
   
     const submitBarcode = async (barcode) => {
       try {
-          const response = await fetch(`http://localhost:5001/api/products/barcode/${barcode}`);
-          if (response.ok) {
-              const product = await response.json();
-              addProductToCart(product);
-          } else {
-              alert('Product not found!');
-          }
+          const product = await window.electronAPI.getProductByBarcode(barcode);
+          addProductToCart(product);
       } catch (err) {
           console.error('Error finding product:', err);
-          alert('Error searching for product');
+          alert('Product not found!');
       }
       setBarcodeInput('');
       barcodeInputRef.current?.focus();

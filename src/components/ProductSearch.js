@@ -30,13 +30,11 @@ function ProductSearch({ onProductSelect, onFocus, onBlur }) {
 
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:5001/api/products/search?query=${encodeURIComponent(value)}`);
-            if (response.ok) {
-                const data = await response.json();
-                setResults(data.products);
-            }
+            const products = await window.electronAPI.searchProducts(value);
+            setResults(products);
         } catch (error) {
             console.error('Error searching products:', error);
+            setResults([]);
         } finally {
             setIsLoading(false);
         }
