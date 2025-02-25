@@ -3,7 +3,7 @@ const { db } = require('../../../models/database');
 
 function registerSalesHandlers() {
     // Create new sale
-    ipcMain.handle('create-sale', async (event, saleData) => {
+    ipcMain.handle('sales:create-sale', async (event, saleData) => {
         try {
             const result = db.transaction(() => {
                 // Insert sale
@@ -52,7 +52,7 @@ function registerSalesHandlers() {
     });
 
     // Get all sales (paginated)
-    ipcMain.handle('get-sales', async (event, { page = 1, pageSize = 10, startDate = '', endDate = '' }) => {
+    ipcMain.handle('sales:get-sales', async (event, { page = 1, pageSize = 10, startDate = '', endDate = '' }) => {
         try {
             const offset = (page - 1) * pageSize;
     
@@ -117,7 +117,7 @@ function registerSalesHandlers() {
     });
 
     // Get sales by product 
-    ipcMain.handle('get-sales-by-product', async (event, { productId, startDate = '', endDate = '' }) => {
+    ipcMain.handle('sales:get-sales-by-product', async (event, { productId, startDate = '', endDate = '' }) => {
         try {
             let whereClause = '';
             let params = [];
@@ -152,7 +152,7 @@ function registerSalesHandlers() {
     
 
     // Get sale by ID
-    ipcMain.handle('get-sale', async (event, id) => {
+    ipcMain.handle('sales:get-sale', async (event, id) => {
         try {
             const sale = db.prepare(`
                 SELECT * FROM sales WHERE id = ?

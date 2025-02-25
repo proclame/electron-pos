@@ -19,7 +19,7 @@ export function SalesProvider({ children }) {
 
     const loadSales = async () => {
         try {
-            const sales = await window.electronAPI.getActiveSales();
+            const sales = await window.electronAPI.activeSales.getActiveSales();
             const current = sales.find(s => s.status === 'current');
             const onHold = sales.filter(s => s.status === 'on_hold');
             if (current) {
@@ -44,7 +44,7 @@ export function SalesProvider({ children }) {
 
     const putSaleOnHold = async (sale, notes = '') => {
         try {
-            const response = await window.electronAPI.putOnHold(currentSaleId, notes);
+            const response = await window.electronAPI.activeSales.putOnHold(currentSaleId, notes);
 
             if (response.ok) {
                 setSalesOnHold(prev => [...prev, { id: currentSaleId, ...sale, notes }]);
@@ -60,7 +60,7 @@ export function SalesProvider({ children }) {
     };
 
     const deleteSale = async (saleId) => {
-        const response = await window.electronAPI.deleteActiveSale(saleId);
+        const response = await window.electronAPI.activeSales.deleteActiveSale(saleId);
     }
 
     const resumeSale = async (saleId) => {
@@ -73,7 +73,7 @@ export function SalesProvider({ children }) {
             const saleToResume = salesOnHold.find(s => s.id === saleId);
             if (!saleToResume) return false;
             console.log('saleToResume', saleToResume);
-            const response = await window.electronAPI.resumeSale(saleId);
+            const response = await window.electronAPI.activeSales.resumeSale(saleId);
 
             setCurrentSaleId(saleId);
 
@@ -100,9 +100,9 @@ export function SalesProvider({ children }) {
             let response = null;
             
             if(currentSaleId) {
-                response = await window.electronAPI.updateActiveSale(currentSaleId, sale);
+                response = await window.electronAPI.activeSales.updateActiveSale(currentSaleId, sale);
             } else {
-                response = await window.electronAPI.createActiveSale(sale);
+                response = await window.electronAPI.activeSales.createActiveSale(sale);
             }
 
             if (response.ok && !currentSaleId) {

@@ -4,7 +4,7 @@ const csv = require('csv-parse');
 
 function registerProductsHandlers() {
     // Import products from CSV
-    ipcMain.handle('import-products', async (event, csvData) => {
+    ipcMain.handle('products:import-products', async (event, csvData) => {
         try {
             return new Promise((resolve, reject) => {
                 const records = [];
@@ -49,7 +49,7 @@ function registerProductsHandlers() {
     });
 
     // Get all products (paginated)
-    ipcMain.handle('get-products', async (event, { page = 1, pageSize = 10, search = '' }) => {
+    ipcMain.handle('products:get-products', async (event, { page = 1, pageSize = 10, search = '' }) => {
         try {
             const offset = (page - 1) * pageSize;
             let whereClause = '';
@@ -82,7 +82,7 @@ function registerProductsHandlers() {
     });
 
     // Create new product
-    ipcMain.handle('create-product', async (event, product) => {
+    ipcMain.handle('products:create-product', async (event, product) => {
         try {
             const result = db.prepare(`
                 INSERT INTO products (
@@ -103,7 +103,7 @@ function registerProductsHandlers() {
     });
 
     // Update product
-    ipcMain.handle('update-product', async (event, { id, product }) => {
+    ipcMain.handle('products:update-product', async (event, { id, product }) => {
         try {
             db.prepare(`
                 UPDATE products 
@@ -125,7 +125,7 @@ function registerProductsHandlers() {
     });
 
     // Delete product
-    ipcMain.handle('delete-product', async (event, id) => {
+    ipcMain.handle('products:delete-product', async (event, id) => {
         try {
             db.prepare('DELETE FROM products WHERE id = ?').run(id);
             return { success: true };
@@ -136,7 +136,7 @@ function registerProductsHandlers() {
     });
 
     // Get product by barcode
-    ipcMain.handle('get-product-by-barcode', async (event, barcode) => {
+    ipcMain.handle('products:get-product-by-barcode', async (event, barcode) => {
         try {
             const product = db.prepare('SELECT * FROM products WHERE barcode = ?').get(barcode);
             if (!product) {
@@ -150,7 +150,7 @@ function registerProductsHandlers() {
     });
 
     // Search products
-    ipcMain.handle('search-products', async (event, query) => {
+    ipcMain.handle('products:search-products', async (event, query) => {
         try {
             const products = db.prepare(`
                 SELECT * FROM products 

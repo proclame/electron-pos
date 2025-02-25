@@ -3,7 +3,7 @@ const { db } = require('../../../models/database');
 const PrinterService = require('../../../services/PrinterService');
 
 function registerSettingsHandlers() {
-    ipcMain.handle('get-settings', async () => {
+    ipcMain.handle('settings:get-settings', async () => {
         try {
             const settings = db.prepare('SELECT key, value FROM settings').all()
                 .reduce((acc, row) => ({
@@ -17,7 +17,7 @@ function registerSettingsHandlers() {
         }
     });
 
-    ipcMain.handle('save-settings', async (event, settings) => {
+    ipcMain.handle('settings:save-settings', async (event, settings) => {
         try {
             const stmt = db.prepare(`
                 UPDATE settings 
@@ -36,7 +36,7 @@ function registerSettingsHandlers() {
         }
     });
 
-    ipcMain.handle('get-printers', async () => {
+    ipcMain.handle('settings:get-printers', async () => {
         try {
             const printers = await PrinterService.getAvailablePrinters();
             return printers;

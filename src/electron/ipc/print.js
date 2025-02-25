@@ -3,7 +3,7 @@ const PrinterService = require('../../../services/PrinterService');
 
 function registerPrintHandlers() {
     // Print receipt
-    ipcMain.handle('print-receipt', async (event, sale) => {
+    ipcMain.handle('print:print-receipt', async (event, sale) => {
         try {
             await PrinterService.printReceipt(sale);
             return { success: true };

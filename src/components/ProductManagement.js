@@ -23,7 +23,7 @@ function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const data = await window.electronAPI.getProducts({ page, pageSize });
+      const data = await window.electronAPI.products.getProducts({ page, pageSize });
       setProducts(data.products);
       setTotalProducts(data.total);
       setLoading(false);
@@ -56,7 +56,7 @@ function ProductManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await window.electronAPI.updateProduct(editingProduct.id, formData);
+      const response = await window.electronAPI.products.updateProduct(editingProduct.id, formData);
 
       if (response.ok) {
         fetchProducts();
@@ -76,7 +76,7 @@ function ProductManagement() {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const response = await window.electronAPI.importProducts(e.target.result);
+          const response = await window.electronAPI.products.importProducts(e.target.result);
           console.log('response', response);
           if (response.ok) {
             alert('Products imported successfully');

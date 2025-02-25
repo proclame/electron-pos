@@ -54,7 +54,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     const handleReprint = async () => {
         try {
             setIsPrinting(true);
-            const response = await window.electronAPI.printReceipt({
+            const response = await window.electronAPI.print.printReceipt({
                     id: sale.id,
                     items: sale.items.map(item => ({
                         product: {
@@ -86,7 +86,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            const response = await window.electronAPI.updateSale(sale.id, {
+            const response = await window.electronAPI.sales.updateSale(sale.id, {
                 notes: editedNotes,
                 needs_invoice: editedNeedsInvoice
             });

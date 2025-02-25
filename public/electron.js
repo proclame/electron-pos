@@ -1,20 +1,13 @@
 const { app } = require('electron');
 
 const WindowManager = require('../src/electron/WindowManager');
-const registerSettingsHandlers = require('../src/electron/ipc/settings');
-const registerPrintHandlers = require('../src/electron/ipc/print');
-const registerSalesHandlers = require('../src/electron/ipc/sales');
-const registerProductsHandlers = require('../src/electron/ipc/products');
-const registerActiveSalesHandlers = require('../src/electron/ipc/active-sales');
+const registerIpcHandlers = require('../src/electron/ipc');
+
 
 async function init() {
     try {
         const isDev = await import('electron-is-dev').then(module => module.default);
-        registerSettingsHandlers();
-        registerPrintHandlers();
-        registerSalesHandlers();
-        registerProductsHandlers();
-        registerActiveSalesHandlers();
+        registerIpcHandlers()
         await WindowManager.createMainWindow(isDev);
     } catch (error) {
         console.error('Error during startup:', error);

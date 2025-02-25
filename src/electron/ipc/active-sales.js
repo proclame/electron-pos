@@ -2,7 +2,7 @@ const { ipcMain } = require('electron');
 const { db } = require('../../../models/database');
 
 function registerActiveSalesHandlers() {
-    ipcMain.handle('get-active-sales', async () => {
+    ipcMain.handle('active-sales:get-active-sales', async () => {
       
         try {
             const activeSales = db.prepare(`
@@ -20,8 +20,8 @@ function registerActiveSalesHandlers() {
         }
     });
 
-    ipcMain.handle('create-active-sale', async (event, cartData) => {
-        console.log('create-active-sale', cartData);
+    ipcMain.handle('active-sales:create-active-sale', async (event, cartData) => {
+        console.log('active-sales:create-active-sale', cartData);
         try {
             const status = 'current';
             const notes = '';
@@ -41,7 +41,7 @@ function registerActiveSalesHandlers() {
         }
     });
 
-    ipcMain.handle('get-active-sale', async (event, id) => {
+    ipcMain.handle('active-sales:get-active-sale', async (event, id) => {
         try {
             const sale = db.prepare('SELECT * FROM active_sales WHERE id = ?').get(id);
             return {
@@ -54,8 +54,8 @@ function registerActiveSalesHandlers() {
         }
     });
 
-    ipcMain.handle('update-active-sale', async (event, id, cartData) => {
-        console.log('update-active-sale', id, cartData);
+    ipcMain.handle('active-sales:update-active-sale', async (event, id, cartData) => {
+        console.log('active-sales:update-active-sale', id, cartData);
         try {
             const result = db.prepare(`
                 UPDATE active_sales 
@@ -70,7 +70,7 @@ function registerActiveSalesHandlers() {
         }
     }); 
 
-    ipcMain.handle('delete-active-sale', async (event, id) => {
+    ipcMain.handle('active-sales:delete-active-sale', async (event, id) => {
         try {
             const result = db.prepare('DELETE FROM active_sales WHERE id = ?').run(id);
             return { ok: true, message: 'Active sale deleted successfully' };
@@ -80,7 +80,7 @@ function registerActiveSalesHandlers() {
         }
     });
 
-    ipcMain.handle('put-on-hold', async (event, id, notes = '') => {
+    ipcMain.handle('active-sales:put-on-hold', async (event, id, notes = '') => {
         try {
             const result = db.prepare(`
                 UPDATE active_sales 
@@ -95,7 +95,7 @@ function registerActiveSalesHandlers() {
         }
     }); 
 
-    ipcMain.handle('resume-sale', async (event, id) => {
+    ipcMain.handle('active-sales:resume-sale', async (event, id) => {
         try {
             const result = db.prepare(`
                 UPDATE active_sales 

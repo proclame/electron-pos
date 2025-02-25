@@ -31,7 +31,7 @@ function Settings() {
 
     const fetchSettings = async () => {
         try {
-            const data = await window.electronAPI.getSettings();
+            const data = await window.electronAPI.settings.getSettings();
             setSettings(data);
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -41,7 +41,7 @@ function Settings() {
 
     const fetchPrinters = async () => {
         try {
-            const data = await window.electronAPI.getPrinters();
+            const data = await window.electronAPI.settings.getPrinters();
             setPrinters(data);            
         } catch (error) {
             console.error('Error fetching printers:', error);
@@ -54,7 +54,7 @@ function Settings() {
         setMessage('');
 
         try {
-            await window.electronAPI.saveSettings(settings);
+            await window.electronAPI.settings.saveSettings(settings);
             setMessage('Settings saved successfully');
         } catch (error) {
             console.error('Error saving settings:', error);

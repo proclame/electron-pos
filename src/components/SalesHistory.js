@@ -32,7 +32,7 @@ function SalesHistory() {
                 endDate: dateFilter.endDate
             };
 
-            const response = await window.electronAPI.getSales(queryParams);
+            const response = await window.electronAPI.sales.getSales(queryParams);
             if (response.ok) {
                 setSales(response.sales);
                 setTotalPages(Math.ceil(response.total / 20));
@@ -51,7 +51,7 @@ function SalesHistory() {
                 endDate: dateFilter.endDate
             });
 
-            const response = await window.electronAPI.getSalesByProduct(queryParams);
+            const response = await window.electronAPI.sales.getSalesByProduct(queryParams);
             setProductSales(response);
         } catch (error) {
             console.error('Error loading product sales:', error);
@@ -75,7 +75,7 @@ function SalesHistory() {
 
     const handleViewSale = async (saleId) => {
         try {
-            const response = await window.electronAPI.getSale(saleId);
+            const response = await window.electronAPI.sales.getSale(saleId);
 
             setSelectedSale(response);
             setIsModalOpen(true);

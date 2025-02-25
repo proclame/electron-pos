@@ -30,7 +30,7 @@ function ProductSearch({ onProductSelect, onFocus, onBlur }) {
 
         setIsLoading(true);
         try {
-            const products = await window.electronAPI.searchProducts(value);
+            const products = await window.electronAPI.products.searchProducts(value);
             setResults(products);
         } catch (error) {
             console.error('Error searching products:', error);

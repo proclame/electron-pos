@@ -94,7 +94,7 @@ function POSSystem() {
   
     const submitBarcode = async (barcode) => {
       try {
-          const product = await window.electronAPI.getProductByBarcode(barcode);
+          const product = await window.electronAPI.products.getProductByBarcode(barcode);
           addProductToCart(product);
       } catch (err) {
           console.error('Error finding product:', err);
@@ -174,13 +174,13 @@ function POSSystem() {
               notes: notes.trim()
           };
   
-          const response = await window.electronAPI.createSale(saleData);
+          const response = await window.electronAPI.sales.createSale(saleData);
   
           if (response.ok) {
               const { id } = response;
               
               try {
-                  await window.electronAPI.printReceipt({ ...saleData, id });
+                  await window.electronAPI.print.printReceipt({ ...saleData, id });
               } catch (printError) {
                   console.error('Error printing receipt:', printError);
                   alert('Sale completed but failed to print receipt');
@@ -306,7 +306,7 @@ function POSSystem() {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const data = await window.electronAPI.getSettings();
+                const data = await window.electronAPI.settings.getSettings();
                 setSettings(data);  
             } catch (error) {
                 console.error('Error loading settings:', error);
