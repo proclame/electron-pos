@@ -19,25 +19,22 @@ export function SalesProvider({ children }) {
 
     const loadSales = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/active-sales');
-            if (response.ok) {
-                const sales = await response.json();
-                const current = sales.find(s => s.status === 'current');
-                const onHold = sales.filter(s => s.status === 'on_hold');
-                
-                if (current) {
-                    setCurrentSaleId(current.id);
-                    setCurrentSale(current.cart_data);
-                } else {
-                    setCurrentSaleId(null);
-                    setCurrentSale(null);
-                }
-                setSalesOnHold(onHold.map(s => ({
-                    id: s.id,
-                    ...s.cart_data,
-                    notes: s.notes
-                })));
+            const sales = await window.electronAPI.getActiveSales();
+            const current = sales.find(s => s.status === 'current');
+            const onHold = sales.filter(s => s.status === 'on_hold');
+            if (current) {
+                setCurrentSaleId(current.id);
+                setCurrentSale(current.cart_data);
+            } else {
+                setCurrentSaleId(null);
+                setCurrentSale(null);
             }
+            setSalesOnHold(onHold.map(s => ({
+                id: s.id,
+                ...s.cart_data,
+                notes: s.notes
+            })));
+        
         } catch (error) {
             console.error('Error loading sales:', error);
         } finally {
@@ -47,13 +44,7 @@ export function SalesProvider({ children }) {
 
     const putSaleOnHold = async (sale, notes = '') => {
         try {
-            const response = await fetch(`http://localhost:5001/api/active-sales/${currentSaleId}/hold`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    notes: notes
-                })
-            });
+            const response = await window.electronAPI.putOnHold(currentSaleId, notes);
 
             if (response.ok) {
                 setSalesOnHold(prev => [...prev, { id: currentSaleId, ...sale, notes }]);
@@ -69,27 +60,21 @@ export function SalesProvider({ children }) {
     };
 
     const deleteSale = async (saleId) => {
-        await fetch(`http://localhost:5001/api/active-sales/${saleId}`, {
-            method: 'DELETE'
-        });
+        const response = await window.electronAPI.deleteActiveSale(saleId);
     }
 
     const resumeSale = async (saleId) => {
         try {
             if (currentSale && currentSaleId) {
+                console.log('put currentsale on hold');
                 await putSaleOnHold(currentSale);
             }
             // Get the sale to resume
             const saleToResume = salesOnHold.find(s => s.id === saleId);
             if (!saleToResume) return false;
+            console.log('saleToResume', saleToResume);
+            const response = await window.electronAPI.resumeSale(saleId);
 
-            const response = await fetch(`http://localhost:5001/api/active-sales/${saleId}/resume`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: saleId,
-                })
-            });
             setCurrentSaleId(saleId);
 
             // Update state
@@ -112,19 +97,13 @@ export function SalesProvider({ children }) {
         }
 
         try {
-            const method = currentSaleId ? 'PUT' : 'POST';
-            const url = currentSaleId 
-                ? `http://localhost:5001/api/active-sales/${currentSaleId}`
-                : 'http://localhost:5001/api/active-sales';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    cart_data: sale,
-                    status: 'current'
-                })
-            });
+            let response = null;
+            
+            if(currentSaleId) {
+                response = await window.electronAPI.updateActiveSale(currentSaleId, sale);
+            } else {
+                response = await window.electronAPI.createActiveSale(sale);
+            }
 
             if (response.ok && !currentSaleId) {
                 // If this was a new sale, store the new ID
