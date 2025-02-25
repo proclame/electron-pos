@@ -324,11 +324,8 @@ function POSSystem() {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const response = await fetch('http://localhost:5001/api/settings');
-                if (response.ok) {
-                    const data = await response.json();
-                    setSettings(data);
-                }
+                const data = await window.electronAPI.getSettings();
+                setSettings(data);  
             } catch (error) {
                 console.error('Error loading settings:', error);
             }

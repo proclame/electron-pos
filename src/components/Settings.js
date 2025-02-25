@@ -41,11 +41,8 @@ function Settings() {
 
     const fetchPrinters = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/settings/printers');
-            if (response.ok) {
-                const data = await response.json();
-                setPrinters(data);
-            }
+            const data = await window.electronAPI.getPrinters();
+            setPrinters(data);            
         } catch (error) {
             console.error('Error fetching printers:', error);
         }
@@ -57,19 +54,8 @@ function Settings() {
         setMessage('');
 
         try {
-            const response = await fetch('http://localhost:5001/api/settings', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(settings)
-            });
-
-            if (response.ok) {
-                setMessage('Settings saved successfully');
-            } else {
-                setMessage('Error saving settings');
-            }
+            await window.electronAPI.saveSettings(settings);
+            setMessage('Settings saved successfully');
         } catch (error) {
             console.error('Error saving settings:', error);
             setMessage('Error saving settings');
