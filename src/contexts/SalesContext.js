@@ -61,7 +61,7 @@ export function SalesProvider({ children }) {
   };
 
   const deleteSale = async (saleId) => {
-    const response = await window.electronAPI.activeSales.deleteActiveSale(saleId);
+    await window.electronAPI.activeSales.deleteActiveSale(saleId);
   };
 
   const resumeSale = async (saleId) => {
@@ -74,7 +74,7 @@ export function SalesProvider({ children }) {
       const saleToResume = salesOnHold.find((s) => s.id === saleId);
       if (!saleToResume) return false;
       console.log('saleToResume', saleToResume);
-      const response = await window.electronAPI.activeSales.resumeSale(saleId);
+      await window.electronAPI.activeSales.resumeSale(saleId);
 
       setCurrentSaleId(saleId);
 

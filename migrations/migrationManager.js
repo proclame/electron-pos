@@ -1,36 +1,9 @@
-const Database = require('better-sqlite3');
 const createProductsTable = require('./001_create_products_table');
 const createSalesTable = require('./002_create_sales_table');
 const createSaleItemsTable = require('./003_create_sale_items_table');
 const createSettingsTable = require('./004_create_settings_table');
 const createActiveSalesTable = require('./005_create_active_sales_table');
 const seedInitialProducts = require('./006_seed_initial_products');
-
-class MigrationManager {
-  constructor(dbPath) {
-    this.db = new Database(dbPath);
-    this.initMigrationTable();
-  }
-
-  initMigrationTable() {
-    this.db.exec(`
-            CREATE TABLE IF NOT EXISTS migrations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-  }
-
-  hasExecuted(migrationName) {
-    const result = this.db.prepare('SELECT id FROM migrations WHERE name = ?').get(migrationName);
-    return !!result;
-  }
-
-  recordMigration(migrationName) {
-    this.db.prepare('INSERT INTO migrations (name) VALUES (?)').run(migrationName);
-  }
-}
 
 const migrations = [
   createProductsTable,
