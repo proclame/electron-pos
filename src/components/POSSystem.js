@@ -192,13 +192,7 @@ function POSSystem() {
               
               // Print receipt
               try {
-                  await fetch('http://localhost:5001/api/print/receipt', {
-                      method: 'POST',
-                      headers: {
-                          'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({ ...saleData, id })
-                  });
+                  await window.electronAPI.printReceipt({ ...saleData, id });
               } catch (printError) {
                   console.error('Error printing receipt:', printError);
                   alert('Sale completed but failed to print receipt');

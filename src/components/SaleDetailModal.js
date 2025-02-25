@@ -54,12 +54,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     const handleReprint = async () => {
         try {
             setIsPrinting(true);
-            const response = await fetch('http://localhost:5001/api/print/receipt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const response = await window.electronAPI.printReceipt({
                     id: sale.id,
                     items: sale.items.map(item => ({
                         product: {
@@ -75,10 +70,9 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
                     payment_method: sale.payment_method,
                     needs_invoice: sale.needs_invoice,
                     notes: sale.notes
-                })
             });
 
-            if (!response.ok) {
+            if (!response.success) {
                 throw new Error('Failed to print receipt');
             }
         } catch (error) {
