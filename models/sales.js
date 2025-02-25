@@ -111,7 +111,7 @@ class SalesRepository {
     }
 
     create(saleData) {
-        const result = this.db.transaction(() => {
+        const result = this.db.transact('create sale', () => {
             // Insert sale
             const saleResult = this.db.prepare(`
                 INSERT INTO sales (
@@ -148,7 +148,7 @@ class SalesRepository {
             });
 
             return { id: saleId };
-        })();
+        });
 
         return { ok: true, ...result };
     }

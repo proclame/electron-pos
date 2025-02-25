@@ -47,65 +47,67 @@ class ProductsRepository {
     }
 
     create(product) {
-        const result = this.db.prepare(`
-            INSERT INTO products (
-                name, barcode, product_code, unit_price, 
-                created_at, updated_at
-            ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).run(
-            product.name,
-            product.barcode,
-            product.product_code,
-            product.unit_price
-        );
-        return { id: result.lastInsertRowid };
+            const result = this.db.prepare(`
+                INSERT INTO products (
+                    name, barcode, product_code, unit_price, 
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).run(
+                product.name,
+                product.barcode,
+                product.product_code,
+                product.unit_price
+            );
+            return { id: result.lastInsertRowid };
     }
 
     update(id, product) {
-        this.db.prepare(`
-            UPDATE products 
-            SET name = ?, barcode = ?, product_code = ?, 
-                unit_price = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(
-            product.name,
-            product.barcode,
-            product.product_code,
-            product.unit_price,
-            id
-        );
-        return { ok: true };
+            this.db.prepare(`
+                UPDATE products 
+                SET name = ?, barcode = ?, product_code = ?, 
+                    unit_price = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(
+                product.name,
+                product.barcode,
+                product.product_code,
+                product.unit_price,
+                id
+            );
+            return { ok: true };
     }
 
     delete(id) {
-        this.db.prepare('DELETE FROM products WHERE id = ?').run(id);
-        return { success: true };
+            this.db.prepare('DELETE FROM products WHERE id = ?').run(id);
+            return { success: true };
     }
 
     importProducts(records) {
-        const stmt = this.db.prepare(`
-            INSERT INTO products (
-                name, barcode, product_code, unit_price,
-                created_at, updated_at
-            ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `);
+        return this.db.transact('import products', () => {
+            const stmt = this.db.prepare(`
+                INSERT INTO products (
+                    name, barcode, product_code, unit_price,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `);
 
-        const importedCount = records.reduce((count, record) => {
-            try {
-                stmt.run(
-                    record.name,
-                    record.barcode,
-                    record.product_code,
-                    parseFloat(record.unit_price)
-                );
-                return count + 1;
-            } catch (error) {
-                console.error('Error importing row:', error, record);
-                return count;
-            }
-        }, 0);
+            const importedCount = records.reduce((count, record) => {
+                try {
+                    stmt.run(
+                        record.name,
+                        record.barcode,
+                        record.product_code,
+                        parseFloat(record.unit_price)
+                    );
+                    return count + 1;
+                } catch (error) {
+                    console.error('Error importing row:', error, record);
+                    return count;
+                }
+            }, 0);
 
-        return { ok: true, importedCount };
+            return { ok: true, importedCount };
+        });
     }
 }
 

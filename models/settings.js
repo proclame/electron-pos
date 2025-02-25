@@ -13,14 +13,17 @@ class SettingsRepository {
     }
 
     update(settings) {
-        const stmt = this.db.prepare(`
-            UPDATE settings 
-            SET value = ?, updated_at = CURRENT_TIMESTAMP 
-            WHERE key = ?
-        `);
+        return this.db.transact('update settings', () => {
+            const stmt = this.db.prepare(`
+                UPDATE settings 
+                SET value = ?, updated_at = CURRENT_TIMESTAMP 
+                WHERE key = ?
+            `);
 
-        Object.entries(settings).forEach(([key, value]) => {
-            stmt.run(value.toString(), key);
+            Object.entries(settings).forEach(([key, value]) => {
+                stmt.run(value.toString(), key);
+            });
+            return { ok: true };
         });
     }
 }
