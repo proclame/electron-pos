@@ -1,12 +1,12 @@
 const { app } = require('electron');
 const server = require('../src/server');
 const WindowManager = require('../src/electron/WindowManager');
-const { ipcMain } = require('electron');
-const { db } = require('../models/database');
+const registerSettingsHandlers = require('../src/electron/ipc/settings');
 
 async function init() {
     try {
         const isDev = await import('electron-is-dev').then(module => module.default);
+        registerSettingsHandlers();
         await server.start(isDev);
         await WindowManager.createMainWindow(isDev);
     } catch (error) {
@@ -14,21 +14,6 @@ async function init() {
         app.quit();
     }
 }
-
-// Add IPC handler for settings
-ipcMain.handle('get-settings', async () => {
-    try {
-        const settings = db.prepare('SELECT * FROM settings').all()
-            .reduce((acc, row) => ({
-                ...acc,
-                [row.key]: row.value
-            }), {});
-        return settings;
-    } catch (error) {
-        console.error('Error fetching settings:', error);
-        throw error;
-    }
-});
 
 app.whenReady().then(init);
 
