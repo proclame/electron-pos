@@ -2,6 +2,7 @@ const Database = require('better-sqlite3');
 const runMigrations = require('../migrations/migrationManager');
 const path = require('path');
 const { app } = require('electron');
+const SettingsRepository = require('./settings');
 
 const dbPath = path.join(app.getPath('downloads'), 'database.sqlite');
 
@@ -9,6 +10,7 @@ const db = new Database(dbPath, {
     verbose: console.log // Remove in production
 });
 
+const settingsRepo = new SettingsRepository(db);
 
 async function initDatabase() {
     try {
@@ -68,5 +70,6 @@ async function initDatabase() {
 
 module.exports = {
     db,
-    initDatabase
+    initDatabase,
+    settingsRepo
 }; 

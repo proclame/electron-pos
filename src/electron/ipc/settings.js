@@ -1,15 +1,11 @@
 const { ipcMain } = require('electron');
-const { db } = require('../../../models/database');
+const { settingsRepo } = require('../../../models/database');
 const PrinterService = require('../../../services/PrinterService');
 
 function registerSettingsHandlers() {
     ipcMain.handle('settings:get-settings', async () => {
         try {
-            const settings = db.prepare('SELECT key, value FROM settings').all()
-                .reduce((acc, row) => ({
-                    ...acc,
-                    [row.key]: row.value
-                }), {});
+            const settings = await settingsRepo.getAll();
             return settings;
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -17,18 +13,9 @@ function registerSettingsHandlers() {
         }
     });
 
-    ipcMain.handle('settings:save-settings', async (event, settings) => {
+    ipcMain.handle('settings:save-settings', async (event, settingsData) => {
         try {
-            const stmt = db.prepare(`
-                UPDATE settings 
-                SET value = ?, updated_at = CURRENT_TIMESTAMP 
-                WHERE key = ?
-            `);
-
-            Object.entries(settings).forEach(([key, value]) => {
-                stmt.run(value.toString(), key);
-            });
-
+            settingsRepo.update(settingsData);
             return { success: true };
         } catch (error) {
             console.error('Error saving settings:', error);
