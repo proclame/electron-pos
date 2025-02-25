@@ -31,13 +31,8 @@ function Settings() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/settings');
-            if (response.ok) {
-                const data = await response.json();
-                setSettings(data);
-            } else {
-                setMessage('Error loading settings');
-            }
+            const data = await window.electronAPI.getSettings();
+            setSettings(data);
         } catch (error) {
             console.error('Error fetching settings:', error);
             setMessage('Error loading settings');

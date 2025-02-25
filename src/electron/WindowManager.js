@@ -4,40 +4,40 @@ const getConfig = require('../config');
 const { app } = require('electron');
 
 class WindowManager {
-    constructor() {
-        this.mainWindow = null;
-    }
+    static mainWindow = null;
 
-    async createMainWindow(isDev) {
+    static async createMainWindow(isDev) {
         const config = getConfig(isDev);
-        this.mainWindow = new BrowserWindow({
-            ...config.window,
+        WindowManager.mainWindow = new BrowserWindow({
+            width: 1200,
+            height: 800,
             webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false
+                nodeIntegration: false,
+                contextIsolation: true,
+                preload: path.join(__dirname, 'preload.js')
             }
         });
 
         if (app.isPackaged) {
             // Load the index.html from the dist folder
-            await this.mainWindow.loadFile(path.join(__dirname, '../../build/index.html'));
+            await WindowManager.mainWindow.loadFile(path.join(__dirname, '../../build/index.html'));
         } else {
             // Dev - Load from React dev server
-            await this.mainWindow.loadURL('http://localhost:3000');
+            await WindowManager.mainWindow.loadURL('http://localhost:3000');
         }
     
         if (config.window.devTools) {
-            this.mainWindow.webContents.openDevTools();
+            WindowManager.mainWindow.webContents.openDevTools();
         }
 
-        this.mainWindow.on('closed', () => {
-            this.mainWindow = null;
+        WindowManager.mainWindow.on('closed', () => {
+            WindowManager.mainWindow = null;
         });
     }
 
-    getMainWindow() {
-        return this.mainWindow;
+    static getMainWindow() {
+        return WindowManager.mainWindow;
     }
 }
 
-module.exports = new WindowManager(); 
+module.exports = WindowManager; 
