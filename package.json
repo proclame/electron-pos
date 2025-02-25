@@ -17,7 +17,12 @@
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "electron-build": "electron-builder",
     "release": "npm run build && electron-builder --publish=never",
-    "release2": "electron-builder --publish=never"
+    "release2": "electron-builder --publish=never",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "fix": "npm run format && npm run lint:fix"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
@@ -34,6 +39,8 @@
     "cross-env": "^7.0.3",
     "electron": "^24.8.8",
     "electron-builder": "^25.1.8",
+    "eslint": "^8.57.1",
+    "prettier": "^3.5.2",
     "react-scripts": "5.0.1",
     "wait-on": "^8.0.2"
   },
