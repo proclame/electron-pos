@@ -17,6 +17,6 @@ const createActiveSalesTable = `
 `;
 
 module.exports = {
-    up: createActiveSalesTable,
-    down: `DROP TABLE IF EXISTS active_sales;`
-}; 
+  up: createActiveSalesTable,
+  down: `DROP TABLE IF EXISTS active_sales;`,
+};

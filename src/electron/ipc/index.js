@@ -4,12 +4,12 @@ const registerSalesHandlers = require('./sales');
 const registerProductsHandlers = require('./products');
 const registerActiveSalesHandlers = require('./active-sales');
 
-function registerIpcHandlers(){
-    registerSettingsHandlers();
-    registerPrintHandlers();
-    registerSalesHandlers();
-    registerProductsHandlers();
-    registerActiveSalesHandlers();
+function registerIpcHandlers() {
+  registerSettingsHandlers();
+  registerPrintHandlers();
+  registerSalesHandlers();
+  registerProductsHandlers();
+  registerActiveSalesHandlers();
 }
 
 module.exports = registerIpcHandlers;

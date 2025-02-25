@@ -13,6 +13,6 @@ const seedInitialProducts = `
 `;
 
 module.exports = {
-    up: seedInitialProducts,
-    down: `DELETE FROM products WHERE product_code IN ('COF001', 'SAN001', 'COK001');`
+  up: seedInitialProducts,
+  down: `DELETE FROM products WHERE product_code IN ('COF001', 'SAN001', 'COK001');`,
 };

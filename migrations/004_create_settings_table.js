@@ -29,6 +29,6 @@ const createSettingsTable = `
 `;
 
 module.exports = {
-    up: createSettingsTable,
-    down: `DROP TABLE IF EXISTS settings;`
-}; 
+  up: createSettingsTable,
+  down: `DROP TABLE IF EXISTS settings;`,
+};

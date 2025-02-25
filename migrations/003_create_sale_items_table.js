@@ -18,6 +18,6 @@ const createSaleItemsTable = `
 `;
 
 module.exports = {
-    up: createSaleItemsTable,
-    down: `DROP TABLE IF EXISTS sale_items;`
-}; 
+  up: createSaleItemsTable,
+  down: `DROP TABLE IF EXISTS sale_items;`,
+};

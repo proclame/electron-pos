@@ -16,6 +16,6 @@ const createProductsTable = `
 `;
 
 module.exports = {
-    up: createProductsTable,
-    down: `DROP TABLE IF EXISTS products;`
-}; 
+  up: createProductsTable,
+  down: `DROP TABLE IF EXISTS products;`,
+};
