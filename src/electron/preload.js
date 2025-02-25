@@ -17,5 +17,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateActiveSale: (saleId, sale) => ipcRenderer.invoke('update-active-sale', saleId, sale),
     deleteActiveSale: (saleId) => ipcRenderer.invoke('delete-active-sale', saleId),
     resumeSale: (saleId) => ipcRenderer.invoke('resume-sale', saleId),
-    putOnHold: (saleId, notes = '') => ipcRenderer.invoke('put-on-hold', saleId, notes)
+    putOnHold: (saleId, notes = '') => ipcRenderer.invoke('put-on-hold', saleId, notes),
+    createSale: (saleData) => ipcRenderer.invoke('create-sale', saleData),
+    getSale: (id) => ipcRenderer.invoke('get-sale', id),
+    updateSale: (id, updates) => ipcRenderer.invoke('update-sale', { id, updates }),
+    getSales: (params) => ipcRenderer.invoke('get-sales', params),
+    getSalesByProduct: (params) => ipcRenderer.invoke('get-sales-by-product', params)
 }); 

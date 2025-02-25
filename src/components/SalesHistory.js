@@ -25,18 +25,17 @@ function SalesHistory() {
 
     const loadSales = async () => {
         try {
-            const queryParams = new URLSearchParams({
+            const queryParams = {
                 page: currentPage,
                 pageSize: 20,
                 startDate: dateFilter.startDate,
                 endDate: dateFilter.endDate
-            });
+            };
 
-            const response = await fetch(`http://localhost:5001/api/sales?${queryParams}`);
+            const response = await window.electronAPI.getSales(queryParams);
             if (response.ok) {
-                const data = await response.json();
-                setSales(data.sales);
-                setTotalPages(Math.ceil(data.total / 20));
+                setSales(response.sales);
+                setTotalPages(Math.ceil(response.total / 20));
             }
         } catch (error) {
             console.error('Error loading sales:', error);
@@ -52,11 +51,8 @@ function SalesHistory() {
                 endDate: dateFilter.endDate
             });
 
-            const response = await fetch(`http://localhost:5001/api/sales/by-product?${queryParams}`);
-            if (response.ok) {
-                const data = await response.json();
-                setProductSales(data);
-            }
+            const response = await window.electronAPI.getSalesByProduct(queryParams);
+            setProductSales(response);
         } catch (error) {
             console.error('Error loading product sales:', error);
         } finally {
@@ -79,12 +75,11 @@ function SalesHistory() {
 
     const handleViewSale = async (saleId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/sales/${saleId}`);
-            if (response.ok) {
-                const saleDetails = await response.json();
-                setSelectedSale(saleDetails);
-                setIsModalOpen(true);
-            }
+            const response = await window.electronAPI.getSale(saleId);
+
+            setSelectedSale(response);
+            setIsModalOpen(true);
+            
         } catch (error) {
             console.error('Error fetching sale details:', error);
         }

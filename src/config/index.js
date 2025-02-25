@@ -2,11 +2,6 @@ const path = require('path');
 
 const config = {
     development: {
-        server: {
-            port: 5001,
-            cors: true,
-            jsonLimit: '10mb'
-        },
         window: {
             width: 1200,
             height: 900,
@@ -17,11 +12,6 @@ const config = {
         }
     },
     production: {
-        server: {
-            port: 5001,
-            cors: true,
-            jsonLimit: '10mb'
-        },
         window: {
             width: 1200,
             height: 900,

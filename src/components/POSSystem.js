@@ -174,18 +174,11 @@ function POSSystem() {
               notes: notes.trim()
           };
   
-          const response = await fetch('http://localhost:5001/api/sales', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(saleData)
-          });
-
+          const response = await window.electronAPI.createSale(saleData);
+  
           if (response.ok) {
-              const { id } = await response.json();
+              const { id } = response;
               
-              // Print receipt
               try {
                   await window.electronAPI.printReceipt({ ...saleData, id });
               } catch (printError) {
@@ -522,6 +515,7 @@ function POSSystem() {
             closeHoldModal();
           }}
         />
+        
       </div>
     );
   }

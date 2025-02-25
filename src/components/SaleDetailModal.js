@@ -86,15 +86,9 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            const response = await fetch(`http://localhost:5001/api/sales/${sale.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    notes: editedNotes,
-                    needs_invoice: editedNeedsInvoice
-                })
+            const response = await window.electronAPI.updateSale(sale.id, {
+                notes: editedNotes,
+                needs_invoice: editedNeedsInvoice
             });
 
             if (response.ok) {

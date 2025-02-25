@@ -24,7 +24,6 @@
     "cors": "^2.8.5",
     "csv-parse": "^5.6.0",
     "electron-is-dev": "^3.0.1",
-    "express": "^5.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0"
@@ -56,11 +55,9 @@
       "build/**/*",
       "node_modules/**/*",
       "pulbic/electron.js",
-      "src/server/**/*",
       "src/electron/**/*",
       "src/config/**/*",
       "models/**/*",
-      "routes/**/*",
       "services/**/*",
       "migrations/**/*"
     ],
