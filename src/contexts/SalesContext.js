@@ -11,6 +11,7 @@ export function SalesProvider({ children }) {
   const [currentSale, setCurrentSale] = useState(null);
   const [salesOnHold, setSalesOnHold] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Load sales from database on startup
   useEffect(() => {
@@ -18,16 +19,20 @@ export function SalesProvider({ children }) {
   }, []);
 
   const loadSales = async () => {
+    if (currentSaleId) {
+      return;
+    }
+
     try {
       const sales = await window.electronAPI.activeSales.getActiveSales();
       const current = sales.find((s) => s.status === 'current');
       const onHold = sales.filter((s) => s.status === 'on_hold');
       if (current) {
-        setCurrentSaleId(current.id);
-        setCurrentSale(current.cart_data);
+        loadCurrentSale(current.id, current.cart_data);
       } else {
         setCurrentSaleId(null);
         setCurrentSale(null);
+        setIsInitialLoad(false);
       }
       setSalesOnHold(
         onHold.map((s) => ({
@@ -40,6 +45,37 @@ export function SalesProvider({ children }) {
       console.error('Error loading sales:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadCurrentSale = (id, sale) => {
+    setCurrentSaleId(id);
+    setCurrentSale(sale);
+  };
+
+  const saveCurrentSale = async (sale) => {
+    setCurrentSale(sale);
+
+    if (!sale) {
+      deleteSale(currentSaleId);
+      setCurrentSaleId(null);
+      return;
+    }
+
+    try {
+      let response = null;
+
+      if (currentSaleId) {
+        response = await window.electronAPI.activeSales.updateActiveSale(currentSaleId, sale);
+      } else {
+        response = await window.electronAPI.activeSales.createActiveSale(sale);
+        if (response.ok) {
+          const id = response.id;
+          setCurrentSaleId(id);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving current sale:', error);
     }
   };
 
@@ -66,53 +102,32 @@ export function SalesProvider({ children }) {
 
   const resumeSale = async (saleId) => {
     try {
-      if (currentSale && currentSaleId) {
-        console.log('put currentsale on hold');
-        await putSaleOnHold(currentSale);
-      }
+      setIsInitialLoad(true);
+
       // Get the sale to resume
       const saleToResume = salesOnHold.find((s) => s.id === saleId);
       if (!saleToResume) return false;
-      console.log('saleToResume', saleToResume);
       await window.electronAPI.activeSales.resumeSale(saleId);
 
-      setCurrentSaleId(saleId);
+      if (currentSaleId) {
+        setSalesOnHold((prev) => {
+          return [
+            ...prev.filter((s) => s.id !== saleId),
+            {
+              id: currentSaleId,
+              ...currentSale,
+            },
+          ];
+        });
+      }
 
-      // Update state
-      setSalesOnHold((prev) => prev.filter((s) => s.id !== saleId));
+      setCurrentSaleId(saleId);
       setCurrentSale(saleToResume);
+
       return true;
     } catch (error) {
       console.error('Error resuming sale:', error);
       return false;
-    }
-  };
-
-  const updateCurrentSale = async (sale) => {
-    setCurrentSale(sale);
-
-    if (!sale) {
-      deleteSale(currentSaleId);
-      setCurrentSaleId(null);
-      return;
-    }
-
-    try {
-      let response = null;
-
-      if (currentSaleId) {
-        response = await window.electronAPI.activeSales.updateActiveSale(currentSaleId, sale);
-      } else {
-        response = await window.electronAPI.activeSales.createActiveSale(sale);
-      }
-
-      if (response.ok && !currentSaleId) {
-        // If this was a new sale, store the new ID
-        const { id } = await response.json();
-        setCurrentSaleId(id);
-      }
-    } catch (error) {
-      console.error('Error saving current sale:', error);
     }
   };
 
@@ -122,12 +137,14 @@ export function SalesProvider({ children }) {
         currentSale,
         salesOnHold,
         isLoading,
-        setCurrentSale: updateCurrentSale,
+        saveCurrentSale,
         setCurrentSaleId,
         currentSaleId,
         putSaleOnHold,
         resumeSale,
-        loadSales,
+        loadCurrentSale,
+        isInitialLoad,
+        setIsInitialLoad,
       }}
     >
       {children}

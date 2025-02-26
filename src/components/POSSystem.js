@@ -4,7 +4,7 @@ import HoldNoteModal from './HoldNoteModal';
 import { useSales } from '../contexts/SalesContext';
 
 function POSSystem() {
-  const { currentSale, setCurrentSale, putSaleOnHold, setCurrentSaleId, currentSaleId } = useSales();
+  const { currentSale, saveCurrentSale, putSaleOnHold, currentSaleId, isInitialLoad, setIsInitialLoad } = useSales();
   const [isReturn, setIsReturn] = useState(false);
   const [settings, setSettings] = useState(null);
   const [barcodeInput, setBarcodeInput] = useState('');
@@ -16,7 +16,6 @@ function POSSystem() {
   const [needsInvoice, setNeedsInvoice] = useState(false);
   const barcodeInputRef = useRef(null);
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
-  const isUpdatingRef = useRef(false);
   const [editingPrice, setEditingPrice] = useState(null);
   const [priceInputValue, setPriceInputValue] = useState('');
 
@@ -35,13 +34,17 @@ function POSSystem() {
 
   // Update current sale whenever cart changes
   useEffect(() => {
-    if (cart.length > 0 && !isUpdatingRef.current) {
-      setCurrentSale({
-        cart,
-        total,
-        notes,
-        needs_invoice: needsInvoice,
-      });
+    if (cart.length > 0) {
+      if (!isInitialLoad) {
+        saveCurrentSale({
+          cart,
+          total,
+          notes,
+          needs_invoice: needsInvoice,
+        });
+      } else {
+        setIsInitialLoad(false);
+      }
     }
   }, [cart, total, notes, needsInvoice]);
 
@@ -142,7 +145,6 @@ function POSSystem() {
       );
 
       if (success) {
-        setCurrentSaleId(null);
         clearCart(false);
       }
     }
@@ -155,7 +157,7 @@ function POSSystem() {
     setNeedsInvoice(false);
     setIsReturn(false);
     if (fullClear) {
-      setCurrentSale(null);
+      saveCurrentSale(null);
     }
     barcodeInputRef.current?.focus();
   };
