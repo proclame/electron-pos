@@ -84,9 +84,9 @@ function POSSystem() {
     const existingItem = updatedCart.find((item) => item.product.id === product.id);
 
     if (existingItem) {
-      existingItem.quantity += 1;
+      existingItem.quantity += isReturn ? -1 : 1;
     } else {
-      updatedCart.push({ product, quantity: 1 });
+      updatedCart.push({ product, quantity: isReturn ? -1 : 1 });
     }
 
     const newTotal = calculateTotal(updatedCart);
@@ -107,7 +107,6 @@ function POSSystem() {
     barcodeInputRef.current?.focus();
   };
 
-  // Add helper function to calculate total
   const calculateTotal = (cartItems) => {
     return cartItems.reduce((sum, item) => sum + item.product.unit_price * item.quantity, 0);
   };
@@ -123,7 +122,8 @@ function POSSystem() {
 
   // Update handleQuantityUpdate
   const handleQuantityUpdate = (index, newQuantity) => {
-    if (newQuantity < 1) return;
+    // Allow negative quantities only in return mode
+    if (!newQuantity) return;
 
     setCart((currentCart) => {
       const newCart = currentCart.map((item, i) => (i === index ? { ...item, quantity: newQuantity } : item));
@@ -208,10 +208,9 @@ function POSSystem() {
   };
 
   const finishEditingQuantity = (index, newQuantity) => {
-    if (newQuantity >= 1) {
-      // Only update if valid quantity
-      handleQuantityUpdate(index, newQuantity);
-    }
+    // Only update if valid quantity
+    handleQuantityUpdate(index, newQuantity);
+
     if (suspendTimeoutRef.current) {
       clearTimeout(suspendTimeoutRef.current);
     }
@@ -425,7 +424,7 @@ function POSSystem() {
                             }}
                             autoFocus
                             style={styles.quantityInput}
-                            min="1"
+                            step="1"
                           />
                         ) : (
                           <span style={styles.cartItemQuantity} onDoubleClick={() => startEditingQuantity(index)}>
