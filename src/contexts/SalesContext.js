@@ -119,6 +119,8 @@ export function SalesProvider({ children }) {
             },
           ];
         });
+      } else {
+        setSalesOnHold((prev) => prev.filter((s) => s.id !== saleId));
       }
 
       setCurrentSaleId(saleId);
