@@ -72,7 +72,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
         notes: sale.notes,
       });
 
-      if (!response.success) {
+      if (!response.ok) {
         throw new Error('Failed to print receipt');
       }
     } catch (error) {

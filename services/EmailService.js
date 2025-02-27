@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const { settingsRepo } = require('../models/database');
+const PDFService = require('./PDFService');
+const receiptTemplate = require('./ReceiptTemplateService');
 
 class EmailService {
   constructor() {
@@ -35,7 +37,8 @@ class EmailService {
       throw new Error('Email service not configured');
     }
 
-    const receiptHtml = this.generateReceiptHTML(sale);
+    const receiptHtml = receiptTemplate.generateReceiptHTML(sale, this.settings);
+    const pdfBuffer = await PDFService.generateReceiptBuffer(sale);
 
     const info = await this.transporter.sendMail({
       from: this.settings.smtp_from,
@@ -43,35 +46,16 @@ class EmailService {
       subject: `Receipt #${sale.id} from ${this.settings.company_name}`,
       text: `Receipt #${sale.id} from ${this.settings.company_name}`,
       html: receiptHtml,
+      attachments: [
+        {
+          filename: `receipt-${sale.id}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
     });
 
     console.log('Message sent: %s', info.messageId);
-  }
-
-  generateReceiptHTML(sale) {
-    // Similar to PrinterService's generateReceiptHTML
-    return `
-      <html>
-        <body>
-          <h1>${this.settings.company_name}</h1>
-          <p>${this.settings.company_address}</p>
-          <hr>
-          ${sale.items
-            .map(
-              (item) => `
-            <div>
-              ${item.product.name} x ${item.quantity}
-              €${(item.product.unit_price * item.quantity).toFixed(2)}
-            </div>
-          `,
-            )
-            .join('')}
-          <hr>
-          <h3>Total: €${sale.total.toFixed(2)}</h3>
-          <p>${this.settings.thank_you_text}</p>
-        </body>
-      </html>
-    `;
   }
 }
 

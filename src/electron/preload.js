@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   print: {
     printReceipt: (sale) => ipcRenderer.invoke('print:print-receipt', sale),
+    generatePDF: (sale) => ipcRenderer.invoke('print:generate-pdf', sale),
   },
   products: {
     getProductByBarcode: (barcode) => ipcRenderer.invoke('products:get-product-by-barcode', barcode),
