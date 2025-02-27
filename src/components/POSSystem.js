@@ -20,6 +20,10 @@ function POSSystem() {
   const [editingPrice, setEditingPrice] = useState(null);
   const [priceInputValue, setPriceInputValue] = useState('');
   const [activeDiscounts, setActiveDiscounts] = useState([]);
+  const [appliedDiscounts, setAppliedDiscounts] = useState({
+    percentage: null,
+    fixed: null,
+  });
 
   // Initialize cart from currentSale or empty
   const [cart, setCart] = useState([]);
@@ -31,6 +35,12 @@ function POSSystem() {
       setTotal(currentSale.total || 0);
       setNotes(currentSale.notes || '');
       setNeedsInvoice(currentSale.needs_invoice || false);
+      setAppliedDiscounts(
+        currentSale.discounts || {
+          percentage: null,
+          fixed: null,
+        },
+      );
     }
   }, [currentSale]);
 
@@ -43,12 +53,13 @@ function POSSystem() {
           total,
           notes,
           needs_invoice: needsInvoice,
+          discounts: appliedDiscounts,
         });
       } else {
         setIsInitialLoad(false);
       }
     }
-  }, [cart, total, notes, needsInvoice]);
+  }, [cart, total, notes, needsInvoice, appliedDiscounts]);
 
   useEffect(() => {
     if (!isSuspendedBarcodeInput) {
@@ -335,6 +346,18 @@ function POSSystem() {
     loadDiscounts();
   }, []);
 
+  const handleApplyDiscount = async (discount) => {
+    const newDiscounts = { ...appliedDiscounts };
+
+    if (discount.type === 'percentage') {
+      newDiscounts.percentage = discount;
+    } else {
+      newDiscounts.fixed = discount;
+    }
+
+    setAppliedDiscounts(newDiscounts);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.leftPanel}>
@@ -467,11 +490,13 @@ function POSSystem() {
                     {activeDiscounts.map((discount) => (
                       <button
                         key={discount.id}
-                        style={styles.discountButton}
-                        onClick={() => {
-                          // We'll implement this next
-                          console.log('Applying discount:', discount);
+                        style={{
+                          ...styles.discountButton,
+                          // ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
+                          //   (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
+                          //   styles.discountButtonActive),
                         }}
+                        onClick={() => handleApplyDiscount(discount)}
                       >
                         <span style={styles.discountName}>{discount.name}</span>
                         <span style={styles.discountValue}>
@@ -557,7 +582,9 @@ const styles = {
     padding: '20px',
     backgroundColor: 'white',
     borderRadius: '5px',
-    border: '1px solid #ddd',
+    borderColor: '#ddd',
+    borderStyle: 'solid',
+    borderWidth: '1px',
   },
   barcodeSection: {
     marginBottom: '20px',
@@ -764,7 +791,9 @@ const styles = {
   emailInput: {
     width: '100%',
     padding: '8px',
-    border: '1px solid #ddd',
+    borderWidth: '1px',
+    borderColor: '#ddd',
+    borderStyle: 'solid',
     borderRadius: '4px',
   },
   discountsSection: {
@@ -789,7 +818,9 @@ const styles = {
     alignItems: 'center',
     padding: '8px 12px',
     backgroundColor: 'white',
-    border: '1px solid #dee2e6',
+    borderColor: '#ddd',
+    borderStyle: 'solid',
+    borderWidth: '1px',
     borderRadius: '4px',
     cursor: 'pointer',
     minWidth: '120px',
@@ -798,6 +829,10 @@ const styles = {
       backgroundColor: '#e9ecef',
       borderColor: '#adb5bd',
     },
+  },
+  discountButtonActive: {
+    backgroundColor: '#007bff',
+    borderColor: '#0056b3',
   },
   discountName: {
     fontWeight: 'bold',
