@@ -45,12 +45,6 @@ class PrinterService {
         width: 300,
         height: 800,
         show: false,
-        webPreferences: {
-          nodeIntegration: true,
-          contextIsolation: false,
-          nativeWindowOpen: true,
-          webSecurity: false,
-        },
       });
 
       const html = receiptTemplateService.generateReceiptHTML(sale, this.settings);
@@ -79,7 +73,7 @@ class PrinterService {
 
       return result;
     } catch (error) {
-      console.error('Error printing receipt (Mac):', error);
+      console.error('Error printing receipt:', error);
       throw error;
     }
   }

@@ -126,10 +126,30 @@ function POSSystem() {
 
   const handleCheckout = async () => {
     try {
+      // Calculate item totals with percentage discounts
+      const itemsWithDiscounts = cart.map((item) => {
+        const subtotal = item.quantity * item.product.unit_price;
+        const percentageDiscount = appliedDiscounts.percentage?.value ?? 0;
+        const discountedTotal = subtotal - (subtotal * percentageDiscount) / 100;
+
+        return {
+          ...item,
+          subtotal,
+          discount_percentage: percentageDiscount,
+          total: discountedTotal,
+        };
+      });
+
+      // Calculate sale totals
+      const subtotal = itemsWithDiscounts.reduce((sum, item) => sum + item.total, 0);
+      const fixedDiscountAmount = appliedDiscounts.fixed?.value ?? 0;
+      const finalTotal = subtotal - Math.min(subtotal, fixedDiscountAmount);
+
       const saleData = {
-        items: cart,
-        subtotal: total,
-        total: total,
+        items: itemsWithDiscounts,
+        subtotal: subtotal,
+        discount_amount: fixedDiscountAmount,
+        total: finalTotal,
         payment_method: 'cash',
         needs_invoice: needsInvoice,
         notes: notes.trim(),

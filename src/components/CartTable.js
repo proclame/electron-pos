@@ -122,6 +122,7 @@ function CartTable({
                         value={priceInputValue}
                         onChange={(e) => setPriceInputValue(e.target.value)}
                         onBlur={handlePriceSubmit}
+                        onFocus={(e) => e.target.select()}
                         step="0.01"
                         min="0"
                         style={styles.quantityInput}
@@ -140,6 +141,7 @@ function CartTable({
                       type="number"
                       value={quantityInputValue}
                       onChange={(e) => setQuantityInputValue(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                       onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {

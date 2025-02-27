@@ -67,19 +67,21 @@ class ReceiptTemplateService {
     <div class="divider"></div>
     <table>
         <tr>
+            <th></th>
             <th>Item</th>
-            <th>Qty</th>
             <th>Price</th>
+            <th></th>
             <th>Total</th>
         </tr>
         ${sale.items
           .map(
             (item) => `
             <tr>
+                <td>${item.quantity}&nbsp;x</td>
                 <td>${item.product.name}</td>
-                <td>${item.quantity}</td>
                 <td>${settings.currency_symbol}${item.product.unit_price.toFixed(2)}</td>
-                <td>${settings.currency_symbol}${(item.quantity * item.product.unit_price).toFixed(2)}</td>
+                <td>${item.discount_percentage || ''}${item.discount_percentage > 0 ? '%' : ''}</td>
+                <td class="right">${settings.currency_symbol}${item.total.toFixed(2)}</td>
             </tr>
         `,
           )

@@ -126,13 +126,14 @@ class SalesRepository {
         .prepare(
           `
                 INSERT INTO sales (
-                    subtotal, total, payment_method, 
+                    subtotal, discount_amount, total, payment_method, 
                     needs_invoice, notes, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `,
         )
         .run(
           saleData.subtotal,
+          saleData.discount_amount,
           saleData.total,
           saleData.payment_method,
           saleData.needs_invoice ? 1 : 0,
@@ -144,9 +145,14 @@ class SalesRepository {
       // Insert sale items
       const insertItem = this.db.prepare(`
                 INSERT INTO sale_items (
-                    sale_id, product_id,
-                    quantity, unit_price, subtotal, total
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    sale_id, 
+                    product_id, 
+                    quantity, 
+                    unit_price, 
+                    subtotal, 
+                    discount_percentage, 
+                    total
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
             `);
 
       saleData.items.forEach((item) => {
@@ -155,8 +161,9 @@ class SalesRepository {
           item.product.id,
           item.quantity,
           item.product.unit_price,
-          item.quantity * item.product.unit_price,
-          item.quantity * item.product.unit_price,
+          item.subtotal,
+          item.discount_percentage,
+          item.total,
         );
       });
 
