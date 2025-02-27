@@ -5,6 +5,7 @@ import Settings from './components/Settings';
 import SalesManager from './components/SalesManager';
 import POSSystem from './components/POSSystem';
 import SalesHistory from './components/SalesHistory';
+import DiscountManagement from './components/DiscountManagement';
 import { SalesProvider } from './contexts/SalesContext';
 
 function App() {
@@ -21,6 +22,9 @@ function App() {
           <Link to="/sales" style={styles.navLink}>
             Sales
           </Link>
+          <Link to="/discounts" style={styles.navLink}>
+            Discounts
+          </Link>
           <Link to="/settings" style={styles.navLink}>
             Settings
           </Link>
@@ -30,6 +34,7 @@ function App() {
           <Route path="/" element={<POSSystem />} />
           <Route path="/products" element={<ProductManagement />} />
           <Route path="/sales" element={<SalesHistory />} />
+          <Route path="/discounts" element={<DiscountManagement />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
 
@@ -153,15 +158,20 @@ const styles = {
     cursor: 'pointer',
   },
   nav: {
+    display: 'flex',
+    padding: '10px',
     backgroundColor: '#f8f9fa',
-    padding: '10px 20px',
-    marginBottom: '20px',
+    borderBottom: '1px solid #dee2e6',
+    gap: '15px',
   },
   navLink: {
-    marginRight: '20px',
     textDecoration: 'none',
     color: '#007bff',
-    fontWeight: 'bold',
+    padding: '8px 12px',
+    borderRadius: '4px',
+    '&:hover': {
+      backgroundColor: '#e9ecef',
+    },
   },
   quantityInput: {
     width: '80px',

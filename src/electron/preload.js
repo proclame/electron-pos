@@ -37,4 +37,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   email: {
     sendReceipt: (sale, email) => ipcRenderer.invoke('email:send-receipt', sale, email),
   },
+  discounts: {
+    getDiscounts: () => ipcRenderer.invoke('discounts:get-discounts'),
+    getActive: () => ipcRenderer.invoke('discounts:get-active'),
+    createDiscount: (discount) => ipcRenderer.invoke('discounts:create-discount', discount),
+    updateDiscount: (id, discount) => ipcRenderer.invoke('discounts:update-discount', { id, discount }),
+    deleteDiscount: (id) => ipcRenderer.invoke('discounts:delete-discount', id),
+    getApplicable: (cartTotal) => ipcRenderer.invoke('discounts:get-applicable', cartTotal),
+  },
 });
