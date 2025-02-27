@@ -12,6 +12,13 @@ function Settings() {
     use_printer: true,
     allow_returns: true,
     selected_printer: '',
+    enable_email: 'false',
+    smtp_host: '',
+    smtp_port: '587',
+    smtp_secure: 'false',
+    smtp_user: '',
+    smtp_pass: '',
+    smtp_from: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -237,6 +244,76 @@ function Settings() {
             </label>
             <div style={styles.helpText}>Allow processing of returns in the POS system</div>
           </div>
+        </div>
+
+        <div style={styles.section}>
+          <h3>Email Settings</h3>
+          <div style={styles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.enable_email === 'true'}
+                onChange={(e) => handleChange('enable_email', e.target.checked.toString())}
+                style={styles.checkbox}
+              />
+              Enable Email Receipts
+            </label>
+          </div>
+          {settings.enable_email === 'true' && (
+            <>
+              <div style={styles.formGroup}>
+                <label>SMTP Host:</label>
+                <input
+                  type="text"
+                  value={settings.smtp_host}
+                  onChange={(e) => handleChange('smtp_host', e.target.value)}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label>SMTP Port:</label>
+                <input
+                  type="text"
+                  value={settings.smtp_port}
+                  onChange={(e) => handleChange('smtp_port', e.target.value)}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={settings.smtp_secure === 'true'}
+                    onChange={(e) => handleChange('smtp_secure', e.target.checked.toString())}
+                    style={styles.checkbox}
+                  />
+                  Use Secure Connection (SSL/TLS)
+                </label>
+              </div>
+              <div style={styles.formGroup}>
+                <label>SMTP User:</label>
+                <input
+                  type="text"
+                  value={settings.smtp_user}
+                  onChange={(e) => handleChange('smtp_user', e.target.value)}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label>SMTP Password:</label>
+                <input
+                  type="password"
+                  value={settings.smtp_pass}
+                  onChange={(e) => handleChange('smtp_pass', e.target.value)}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label>From Email:</label>
+                <input
+                  type="email"
+                  value={settings.smtp_from}
+                  onChange={(e) => handleChange('smtp_from', e.target.value)}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {message && <div style={styles.message}>{message}</div>}

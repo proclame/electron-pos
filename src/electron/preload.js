@@ -33,4 +33,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSales: (params) => ipcRenderer.invoke('sales:get-sales', params),
     getSalesByProduct: (params) => ipcRenderer.invoke('sales:get-sales-by-product', params),
   },
+  email: {
+    sendReceipt: (sale, email) => ipcRenderer.invoke('email:send-receipt', sale, email),
+  },
 });

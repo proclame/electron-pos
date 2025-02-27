@@ -14,6 +14,7 @@ function POSSystem() {
   const [quantityInputValue, setQuantityInputValue] = useState('');
   const [notes, setNotes] = useState('');
   const [needsInvoice, setNeedsInvoice] = useState(false);
+  const [email, setEmail] = useState('');
   const barcodeInputRef = useRef(null);
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
   const [editingPrice, setEditingPrice] = useState(null);
@@ -171,6 +172,7 @@ function POSSystem() {
         payment_method: 'cash',
         needs_invoice: needsInvoice,
         notes: notes.trim(),
+        email: email.trim(),
       };
 
       const response = await window.electronAPI.sales.createSale(saleData);
@@ -180,6 +182,9 @@ function POSSystem() {
 
         try {
           await window.electronAPI.print.printReceipt({ ...saleData, id });
+          if (email) {
+            await window.electronAPI.email.sendReceipt({ ...saleData, id }, email);
+          }
         } catch (printError) {
           console.error('Error printing receipt:', printError);
           alert('Sale completed but failed to print receipt');
@@ -189,6 +194,7 @@ function POSSystem() {
         clearCart();
         setNotes('');
         setNeedsInvoice(false);
+        setEmail('');
       } else {
         alert('Error completing sale');
       }
@@ -304,12 +310,8 @@ function POSSystem() {
   // Load settings
   useEffect(() => {
     const loadSettings = async () => {
-      try {
-        const data = await window.electronAPI.settings.getSettings();
-        setSettings(data);
-      } catch (error) {
-        console.error('Error loading settings:', error);
-      }
+      const settingsData = await window.electronAPI.settings.getSettings();
+      setSettings(settingsData);
     };
     loadSettings();
   }, []);
@@ -457,6 +459,19 @@ function POSSystem() {
                     Invoice needed
                   </label>
                 </div>
+                {settings?.enable_email === 'true' && (
+                  <div style={styles.emailField}>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={handleNotesFieldFocus}
+                      onBlur={handleNotesFieldBlur}
+                      placeholder="Email for receipt (optional)"
+                      style={styles.emailInput}
+                    />
+                  </div>
+                )}
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -706,6 +721,15 @@ const styles = {
     marginBottom: '20px',
     fontSize: '16px',
     fontWeight: 'bold',
+  },
+  emailField: {
+    marginBottom: '10px',
+  },
+  emailInput: {
+    width: '100%',
+    padding: '8px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
   },
 };
 

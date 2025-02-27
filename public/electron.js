@@ -2,9 +2,11 @@ const { app } = require('electron');
 
 const WindowManager = require('../src/electron/WindowManager');
 const registerIpcHandlers = require('../src/electron/ipc');
+const { initDatabase } = require('../models/database');
 
 async function init() {
   try {
+    await initDatabase();
     const isDev = await import('electron-is-dev').then((module) => module.default);
     registerIpcHandlers();
     await WindowManager.createMainWindow(isDev);
