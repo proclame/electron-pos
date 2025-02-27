@@ -121,7 +121,13 @@ function POSSystem() {
   };
 
   const calculateTotal = (cartItems) => {
-    return cartItems.reduce((sum, item) => sum + item.product.unit_price * item.quantity, 0);
+    return cartItems.reduce(
+      (sum, item) =>
+        sum +
+        item.product.unit_price * item.quantity -
+        (item.product.unit_price * item.quantity * (appliedDiscounts.percentage?.value ?? 0)) / 100,
+      0,
+    );
   };
 
   // Update removeFromCart
@@ -416,69 +422,87 @@ function POSSystem() {
               <table style={styles.cartTable}>
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                    <th>Actions</th>
+                    <th style={{ textAlign: 'left' }}>Product</th>
+                    <th style={{ textAlign: 'right' }}>Price</th>
+                    <th style={{ textAlign: 'center' }}>Qty</th>
+                    <th style={{ textAlign: 'center' }}>Discount</th>
+                    <th style={{ textAlign: 'right' }}>Total</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {cart.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.product.name}</td>
-                      <td>
-                        {editingPrice === index ? (
-                          <form onSubmit={handlePriceSubmit}>
+                  {cart.map((item, index) => {
+                    const itemTotal = item.quantity * item.product.unit_price;
+                    const discountAmount = appliedDiscounts.percentage
+                      ? (itemTotal * appliedDiscounts.percentage.value) / 100
+                      : 0;
+                    const finalItemTotal = itemTotal - discountAmount;
+
+                    return (
+                      <tr key={index}>
+                        <td>{item.product.name}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {editingPrice === index ? (
+                            <form onSubmit={handlePriceSubmit}>
+                              <input
+                                type="number"
+                                value={priceInputValue}
+                                onChange={(e) => setPriceInputValue(e.target.value)}
+                                onBlur={handlePriceSubmit}
+                                step="0.01"
+                                min="0"
+                                style={styles.quantityInput}
+                                autoFocus
+                              />
+                            </form>
+                          ) : (
+                            <span onDoubleClick={() => handlePriceClick(index)} style={styles.editableField}>
+                              €{item.product.unit_price.toFixed(2)}
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {editingQuantity === index ? (
                             <input
                               type="number"
-                              value={priceInputValue}
-                              onChange={(e) => setPriceInputValue(e.target.value)}
-                              onBlur={handlePriceSubmit}
-                              step="0.01"
-                              min="0"
-                              style={styles.quantityInput}
+                              value={quantityInputValue}
+                              onChange={(e) => setQuantityInputValue(e.target.value)}
+                              onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
+                                } else if (e.key === 'Escape') {
+                                  cancelEditingQuantity();
+                                }
+                              }}
                               autoFocus
+                              style={styles.quantityInput}
+                              step="1"
                             />
-                          </form>
-                        ) : (
-                          <span onDoubleClick={() => handlePriceClick(index)} style={styles.editableField}>
-                            €{item.product.unit_price.toFixed(2)}
+                          ) : (
+                            <span style={styles.cartItemQuantity} onDoubleClick={() => startEditingQuantity(index)}>
+                              x{item.quantity}
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {appliedDiscounts.percentage && (
+                            <span style={styles.discountCell}>-{appliedDiscounts.percentage.value}%</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <span style={appliedDiscounts.percentage ? styles.discountedPrice : undefined}>
+                            €{finalItemTotal.toFixed(2)}
                           </span>
-                        )}
-                      </td>
-                      <td>
-                        {editingQuantity === index ? (
-                          <input
-                            type="number"
-                            value={quantityInputValue}
-                            onChange={(e) => setQuantityInputValue(e.target.value)}
-                            onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
-                              } else if (e.key === 'Escape') {
-                                cancelEditingQuantity();
-                              }
-                            }}
-                            autoFocus
-                            style={styles.quantityInput}
-                            step="1"
-                          />
-                        ) : (
-                          <span style={styles.cartItemQuantity} onDoubleClick={() => startEditingQuantity(index)}>
-                            x{item.quantity}
-                          </span>
-                        )}
-                      </td>
-                      <td>€{(item.quantity * item.product.unit_price).toFixed(2)}</td>
-                      <td>
-                        <button onClick={() => removeFromCart(index)} style={styles.removeButton}>
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td>
+                          <button onClick={() => removeFromCart(index)} style={styles.removeButton}>
+                            ×
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -492,9 +516,9 @@ function POSSystem() {
                         key={discount.id}
                         style={{
                           ...styles.discountButton,
-                          // ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
-                          //   (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
-                          //   styles.discountButtonActive),
+                          ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
+                            (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
+                            styles.discountButtonActive),
                         }}
                         onClick={() => handleApplyDiscount(discount)}
                       >
@@ -507,7 +531,24 @@ function POSSystem() {
                   </div>
                 </div>
               )}
-              <h3>Total: €{total.toFixed(2)}</h3>
+              <div style={styles.totalsBreakdown}>
+                {appliedDiscounts.fixed && (
+                  <div>
+                    <div style={styles.totalRow}>
+                      <span>Subtotal:</span>
+                      <span>€{total.toFixed(2)}</span>
+                    </div>
+                    <div style={styles.totalRow}>
+                      <span>Discount ({appliedDiscounts.fixed.name}):</span>
+                      <span style={styles.discountAmount}>-€{appliedDiscounts.fixed.value.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+                <div style={styles.totalRowFinal}>
+                  <span>Total:</span>
+                  <span>€{(total - Math.min(total, appliedDiscounts.fixed?.value ?? 0)).toFixed(2)}</span>
+                </div>
+              </div>
               <div style={styles.checkoutFields}>
                 <div style={styles.invoiceField}>
                   <label>
@@ -841,6 +882,41 @@ const styles = {
   discountValue: {
     color: '#28a745',
     fontSize: '14px',
+  },
+  totalsBreakdown: {
+    marginTop: '20px',
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '4px',
+  },
+  totalRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '8px',
+    fontSize: '16px',
+  },
+  totalRowFinal: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: '12px',
+    paddingTop: '12px',
+    borderTop: '2px solid #dee2e6',
+    fontSize: '18px',
+    fontWeight: 'bold',
+  },
+  discountAmount: {
+    color: '#dc3545',
+  },
+  discountCell: {
+    color: '#dc3545',
+    backgroundColor: '#f8d7da',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    fontSize: '0.9em',
+  },
+  discountedPrice: {
+    color: '#28a745',
+    fontWeight: 'bold',
   },
 };
 
