@@ -19,6 +19,7 @@ function POSSystem() {
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
   const [editingPrice, setEditingPrice] = useState(null);
   const [priceInputValue, setPriceInputValue] = useState('');
+  const [activeDiscounts, setActiveDiscounts] = useState([]);
 
   // Initialize cart from currentSale or empty
   const [cart, setCart] = useState([]);
@@ -321,6 +322,19 @@ function POSSystem() {
     setIsReturn(!isReturn);
   };
 
+  // Load active discounts
+  useEffect(() => {
+    const loadDiscounts = async () => {
+      try {
+        const discounts = await window.electronAPI.discounts.getActive();
+        setActiveDiscounts(discounts);
+      } catch (error) {
+        console.error('Error loading discounts:', error);
+      }
+    };
+    loadDiscounts();
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.leftPanel}>
@@ -446,6 +460,28 @@ function POSSystem() {
               </table>
             </div>
             <div style={styles.total}>
+              {activeDiscounts.length > 0 && (
+                <div style={styles.discountsSection}>
+                  <h4 style={styles.discountsTitle}>Available Discounts</h4>
+                  <div style={styles.discountsList}>
+                    {activeDiscounts.map((discount) => (
+                      <button
+                        key={discount.id}
+                        style={styles.discountButton}
+                        onClick={() => {
+                          // We'll implement this next
+                          console.log('Applying discount:', discount);
+                        }}
+                      >
+                        <span style={styles.discountName}>{discount.name}</span>
+                        <span style={styles.discountValue}>
+                          {discount.type === 'percentage' ? `${discount.value}%` : `€${discount.value}`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <h3>Total: €{total.toFixed(2)}</h3>
               <div style={styles.checkoutFields}>
                 <div style={styles.invoiceField}>
@@ -730,6 +766,46 @@ const styles = {
     padding: '8px',
     border: '1px solid #ddd',
     borderRadius: '4px',
+  },
+  discountsSection: {
+    marginBottom: '20px',
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '4px',
+  },
+  discountsTitle: {
+    margin: '0 0 10px 0',
+    fontSize: '16px',
+    color: '#495057',
+  },
+  discountsList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  discountButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '8px 12px',
+    backgroundColor: 'white',
+    border: '1px solid #dee2e6',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    minWidth: '120px',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: '#e9ecef',
+      borderColor: '#adb5bd',
+    },
+  },
+  discountName: {
+    fontWeight: 'bold',
+    marginBottom: '4px',
+  },
+  discountValue: {
+    color: '#28a745',
+    fontSize: '14px',
   },
 };
 
