@@ -9,15 +9,12 @@
   "repository": {},
   "scripts": {
     "start": "react-scripts start",
-    "electron-start": "electron .",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron-dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"wait-on http://127.0.0.1:3000/ && electron .\"",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "electron-build": "electron-builder",
     "release": "npm run build && electron-builder --publish=never",
-    "release2": "electron-builder --publish=never",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
@@ -72,12 +69,6 @@
     ],
     "directories": {
       "buildResources": "assets"
-    },
-    "extraResources": [
-      {
-        "from": "models/database.sqlite",
-        "to": "database.sqlite"
-      }
-    ]
+    }
   }
 }
