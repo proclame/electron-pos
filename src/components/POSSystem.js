@@ -1,47 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ProductSearch from './ProductSearch';
 import HoldNoteModal from './HoldNoteModal';
+import CartTable from './CartTable';
+import DiscountsPanel from './DiscountsPanel';
+import TotalsPanel from './TotalsPanel';
+import BarcodeScanner from './BarcodeScanner';
 import { useSales } from '../contexts/SalesContext';
 
 function POSSystem() {
   const { currentSale, saveCurrentSale, putSaleOnHold, currentSaleId, isInitialLoad, setIsInitialLoad } = useSales();
   const [isReturn, setIsReturn] = useState(false);
   const [settings, setSettings] = useState(null);
-  const [barcodeInput, setBarcodeInput] = useState('');
-  const [editingQuantity, setEditingQuantity] = useState(null);
-  const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = useState(false);
-  const suspendTimeoutRef = useRef(null);
-  const [quantityInputValue, setQuantityInputValue] = useState('');
   const [notes, setNotes] = useState('');
   const [needsInvoice, setNeedsInvoice] = useState(false);
   const [email, setEmail] = useState('');
-  const barcodeInputRef = useRef(null);
   const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
-  const [editingPrice, setEditingPrice] = useState(null);
-  const [priceInputValue, setPriceInputValue] = useState('');
   const [activeDiscounts, setActiveDiscounts] = useState([]);
   const [appliedDiscounts, setAppliedDiscounts] = useState({
     percentage: null,
     fixed: null,
   });
-
-  // Initialize cart from currentSale or empty
+  const [isSuspendedBarcodeInput, setIsSuspendedBarcodeInput] = React.useState(false);
+  const suspendTimeoutRef = useRef(null);
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    if (currentSale) {
-      setCart(currentSale.cart || []);
-      setTotal(currentSale.total || 0);
-      setNotes(currentSale.notes || '');
-      setNeedsInvoice(currentSale.needs_invoice || false);
-      setAppliedDiscounts(
-        currentSale.discounts || {
-          percentage: null,
-          fixed: null,
-        },
-      );
-    }
+    setCart(currentSale?.cart || []);
+    setTotal(currentSale?.total || 0);
+    setNotes(currentSale?.notes || '');
+    setNeedsInvoice(currentSale?.needs_invoice || false);
+    setAppliedDiscounts(
+      currentSale?.discounts || {
+        percentage: null,
+        fixed: null,
+      },
+    );
   }, [currentSale]);
 
   // Update current sale whenever cart changes
@@ -61,37 +55,6 @@ function POSSystem() {
     }
   }, [cart, total, notes, needsInvoice, appliedDiscounts]);
 
-  useEffect(() => {
-    if (!isSuspendedBarcodeInput) {
-      barcodeInputRef.current?.focus();
-    }
-  }, [isSuspendedBarcodeInput]);
-
-  const handleBarcodeBlur = () => {
-    if (suspendTimeoutRef.current) {
-      clearTimeout(suspendTimeoutRef.current);
-    }
-
-    if (!isSuspendedBarcodeInput) {
-      suspendTimeoutRef.current = setTimeout(() => {
-        barcodeInputRef.current?.focus();
-        suspendTimeoutRef.current = null;
-      }, 100);
-    }
-  };
-
-  const handleBarcodeChange = (e) => {
-    const value = e.target.value;
-    setBarcodeInput(value);
-  };
-
-  const handleBarcodeSubmit = (e) => {
-    e.preventDefault();
-    if (barcodeInput.trim()) {
-      submitBarcode(barcodeInput);
-    }
-  };
-
   const addProductToCart = (product) => {
     const updatedCart = [...cart];
     const existingItem = updatedCart.find((item) => item.product.id === product.id);
@@ -106,18 +69,6 @@ function POSSystem() {
 
     setCart(updatedCart);
     setTotal(newTotal);
-  };
-
-  const submitBarcode = async (barcode) => {
-    try {
-      const product = await window.electronAPI.products.getProductByBarcode(barcode);
-      addProductToCart(product);
-    } catch (err) {
-      console.error('Error finding product:', err);
-      alert('Product not found!');
-    }
-    setBarcodeInput('');
-    barcodeInputRef.current?.focus();
   };
 
   const calculateTotal = (cartItems) => {
@@ -137,19 +88,6 @@ function POSSystem() {
       setTotal(calculateTotal(newCart));
       return newCart;
     });
-  };
-
-  // Update handleQuantityUpdate
-  const handleQuantityUpdate = (index, newQuantity) => {
-    // Allow negative quantities only in return mode
-    if (!newQuantity) return;
-
-    setCart((currentCart) => {
-      const newCart = currentCart.map((item, i) => (i === index ? { ...item, quantity: newQuantity } : item));
-      setTotal(calculateTotal(newCart));
-      return newCart;
-    });
-    setEditingQuantity(null);
   };
 
   const handlePutOnHold = async (notes = '') => {
@@ -174,11 +112,16 @@ function POSSystem() {
     setTotal(0);
     setNotes('');
     setNeedsInvoice(false);
+    setEmail('');
     setIsReturn(false);
+    setAppliedDiscounts({
+      percentage: null,
+      fixed: null,
+    });
+
     if (fullClear) {
       saveCurrentSale(null);
     }
-    barcodeInputRef.current?.focus();
   };
 
   const handleCheckout = async () => {
@@ -210,9 +153,6 @@ function POSSystem() {
 
         alert('Sale completed successfully!');
         clearCart();
-        setNotes('');
-        setNeedsInvoice(false);
-        setEmail('');
       } else {
         alert('Error completing sale');
       }
@@ -220,35 +160,6 @@ function POSSystem() {
       console.error('Error during checkout:', err);
       alert('Error completing sale');
     }
-  };
-
-  const startEditingQuantity = (index) => {
-    if (suspendTimeoutRef.current) {
-      clearTimeout(suspendTimeoutRef.current);
-    }
-    setIsSuspendedBarcodeInput(true);
-    setQuantityInputValue(cart[index].quantity.toString());
-    setEditingQuantity(index);
-  };
-
-  const finishEditingQuantity = (index, newQuantity) => {
-    // Only update if valid quantity
-    handleQuantityUpdate(index, newQuantity);
-
-    if (suspendTimeoutRef.current) {
-      clearTimeout(suspendTimeoutRef.current);
-    }
-    setQuantityInputValue('');
-    setIsSuspendedBarcodeInput(false);
-  };
-
-  const cancelEditingQuantity = () => {
-    if (suspendTimeoutRef.current) {
-      clearTimeout(suspendTimeoutRef.current);
-    }
-    setQuantityInputValue('');
-    setEditingQuantity(null);
-    setIsSuspendedBarcodeInput(false);
   };
 
   // Add handlers for notes focus
@@ -273,43 +184,6 @@ function POSSystem() {
       }
     };
   }, []);
-
-  // Add this function to handle price editing
-  const handlePriceClick = (index) => {
-    if (suspendTimeoutRef.current) {
-      clearTimeout(suspendTimeoutRef.current);
-    }
-    setIsSuspendedBarcodeInput(true);
-
-    if (editingQuantity !== null) return;
-
-    setEditingPrice(index);
-    setPriceInputValue(cart[index].product.unit_price.toString());
-  };
-
-  const handlePriceSubmit = (e) => {
-    e.preventDefault();
-    if (editingPrice === null) return;
-
-    const newPrice = parseFloat(priceInputValue);
-    if (isNaN(newPrice) || newPrice < 0) {
-      setPriceInputValue(cart[editingPrice].product.unit_price.toString());
-      setEditingPrice(null);
-      setIsSuspendedBarcodeInput(false);
-      return;
-    }
-
-    // Update the existing cart item's price
-    setCart((currentCart) => {
-      const updatedCart = [...currentCart];
-      updatedCart[editingPrice].product.unit_price = newPrice;
-      setTotal(calculateTotal(updatedCart));
-      return updatedCart;
-    });
-
-    setEditingPrice(null);
-    setIsSuspendedBarcodeInput(false);
-  };
 
   // Update the state change for modal
   const openHoldModal = () => {
@@ -380,25 +254,13 @@ function POSSystem() {
             </button>
           </div>
         )}
-        <div style={styles.barcodeSection}>
-          <form onSubmit={handleBarcodeSubmit}>
-            <input
-              ref={barcodeInputRef}
-              type="text"
-              value={barcodeInput}
-              onChange={handleBarcodeChange}
-              onBlur={handleBarcodeBlur}
-              placeholder="Scan barcode..."
-              style={styles.barcodeInput}
-              autoComplete="off"
-            />
-          </form>
-        </div>
+        <BarcodeScanner
+          onProductScanned={addProductToCart}
+          isSuspendedBarcodeInput={isSuspendedBarcodeInput}
+          suspendTimeoutRef={suspendTimeoutRef}
+        />
         <ProductSearch
-          onProductSelect={(product) => {
-            addProductToCart(product);
-            setBarcodeInput('');
-          }}
+          onProductSelect={addProductToCart}
           onFocus={() => {
             if (suspendTimeoutRef.current) {
               clearTimeout(suspendTimeoutRef.current);
@@ -418,182 +280,68 @@ function POSSystem() {
         <div style={styles.cartContainer}>
           <div style={styles.cartSection}>
             <h2>Current Cart: {currentSaleId}</h2>
-            <div style={styles.cartItems}>
-              <table style={styles.cartTable}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left' }}>Product</th>
-                    <th style={{ textAlign: 'right' }}>Price</th>
-                    <th style={{ textAlign: 'center' }}>Qty</th>
-                    <th style={{ textAlign: 'center' }}>Discount</th>
-                    <th style={{ textAlign: 'right' }}>Total</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.map((item, index) => {
-                    const itemTotal = item.quantity * item.product.unit_price;
-                    const discountAmount = appliedDiscounts.percentage
-                      ? (itemTotal * appliedDiscounts.percentage.value) / 100
-                      : 0;
-                    const finalItemTotal = itemTotal - discountAmount;
-
-                    return (
-                      <tr key={index}>
-                        <td>{item.product.name}</td>
-                        <td style={{ textAlign: 'right' }}>
-                          {editingPrice === index ? (
-                            <form onSubmit={handlePriceSubmit}>
-                              <input
-                                type="number"
-                                value={priceInputValue}
-                                onChange={(e) => setPriceInputValue(e.target.value)}
-                                onBlur={handlePriceSubmit}
-                                step="0.01"
-                                min="0"
-                                style={styles.quantityInput}
-                                autoFocus
-                              />
-                            </form>
-                          ) : (
-                            <span onDoubleClick={() => handlePriceClick(index)} style={styles.editableField}>
-                              €{item.product.unit_price.toFixed(2)}
-                            </span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          {editingQuantity === index ? (
-                            <input
-                              type="number"
-                              value={quantityInputValue}
-                              onChange={(e) => setQuantityInputValue(e.target.value)}
-                              onBlur={() => finishEditingQuantity(index, parseInt(quantityInputValue) || 0)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  finishEditingQuantity(index, parseInt(quantityInputValue) || 0);
-                                } else if (e.key === 'Escape') {
-                                  cancelEditingQuantity();
-                                }
-                              }}
-                              autoFocus
-                              style={styles.quantityInput}
-                              step="1"
-                            />
-                          ) : (
-                            <span style={styles.cartItemQuantity} onDoubleClick={() => startEditingQuantity(index)}>
-                              x{item.quantity}
-                            </span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          {appliedDiscounts.percentage && (
-                            <span style={styles.discountCell}>-{appliedDiscounts.percentage.value}%</span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <span style={appliedDiscounts.percentage ? styles.discountedPrice : undefined}>
-                            €{finalItemTotal.toFixed(2)}
-                          </span>
-                        </td>
-                        <td>
-                          <button onClick={() => removeFromCart(index)} style={styles.removeButton}>
-                            ×
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div style={styles.total}>
-              {activeDiscounts.length > 0 && (
-                <div style={styles.discountsSection}>
-                  <h4 style={styles.discountsTitle}>Available Discounts</h4>
-                  <div style={styles.discountsList}>
-                    {activeDiscounts.map((discount) => (
-                      <button
-                        key={discount.id}
-                        style={{
-                          ...styles.discountButton,
-                          ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
-                            (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
-                            styles.discountButtonActive),
-                        }}
-                        onClick={() => handleApplyDiscount(discount)}
-                      >
-                        <span style={styles.discountName}>{discount.name}</span>
-                        <span style={styles.discountValue}>
-                          {discount.type === 'percentage' ? `${discount.value}%` : `€${discount.value}`}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+            <CartTable
+              cart={cart}
+              setCart={setCart}
+              setTotal={setTotal}
+              calculateTotal={calculateTotal}
+              appliedDiscounts={appliedDiscounts}
+              onRemoveItem={removeFromCart}
+              suspendTimeoutRef={suspendTimeoutRef}
+              setIsSuspendedBarcodeInput={setIsSuspendedBarcodeInput}
+            />
+            {activeDiscounts.length > 0 && (
+              <DiscountsPanel
+                activeDiscounts={activeDiscounts}
+                appliedDiscounts={appliedDiscounts}
+                onApplyDiscount={handleApplyDiscount}
+              />
+            )}
+            <TotalsPanel total={total} appliedDiscounts={appliedDiscounts} />
+            <div style={styles.checkoutFields}>
+              <div style={styles.invoiceField}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={needsInvoice}
+                    onChange={(e) => setNeedsInvoice(e.target.checked)}
+                    style={styles.checkbox}
+                  />
+                  Invoice needed
+                </label>
+              </div>
+              {settings?.enable_email === 'true' && (
+                <div style={styles.emailField}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={handleNotesFieldFocus}
+                    onBlur={handleNotesFieldBlur}
+                    placeholder="Email for receipt (optional)"
+                    style={styles.emailInput}
+                  />
                 </div>
               )}
-              <div style={styles.totalsBreakdown}>
-                {appliedDiscounts.fixed && (
-                  <div>
-                    <div style={styles.totalRow}>
-                      <span>Subtotal:</span>
-                      <span>€{total.toFixed(2)}</span>
-                    </div>
-                    <div style={styles.totalRow}>
-                      <span>Discount ({appliedDiscounts.fixed.name}):</span>
-                      <span style={styles.discountAmount}>-€{appliedDiscounts.fixed.value.toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
-                <div style={styles.totalRowFinal}>
-                  <span>Total:</span>
-                  <span>€{(total - Math.min(total, appliedDiscounts.fixed?.value ?? 0)).toFixed(2)}</span>
-                </div>
-              </div>
-              <div style={styles.checkoutFields}>
-                <div style={styles.invoiceField}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={needsInvoice}
-                      onChange={(e) => setNeedsInvoice(e.target.checked)}
-                      style={styles.checkbox}
-                    />
-                    Invoice needed
-                  </label>
-                </div>
-                {settings?.enable_email === 'true' && (
-                  <div style={styles.emailField}>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onFocus={handleNotesFieldFocus}
-                      onBlur={handleNotesFieldBlur}
-                      placeholder="Email for receipt (optional)"
-                      style={styles.emailInput}
-                    />
-                  </div>
-                )}
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  onFocus={handleNotesFieldFocus}
-                  onBlur={handleNotesFieldBlur}
-                  placeholder="Add notes..."
-                  style={styles.notesField}
-                />
-              </div>
-              <div style={styles.cartButtons}>
-                <button onClick={openHoldModal} style={styles.holdButton} disabled={cart.length === 0}>
-                  Put on Hold
-                </button>
-                <button onClick={clearCart} style={styles.clearButton} disabled={cart.length === 0}>
-                  Clear Cart
-                </button>
-                <button onClick={handleCheckout} style={styles.checkoutButton} disabled={cart.length === 0}>
-                  Checkout
-                </button>
-              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onFocus={handleNotesFieldFocus}
+                onBlur={handleNotesFieldBlur}
+                placeholder="Add notes..."
+                style={styles.notesField}
+              />
+            </div>
+            <div style={styles.cartButtons}>
+              <button onClick={openHoldModal} style={styles.holdButton} disabled={cart.length === 0}>
+                Put on Hold
+              </button>
+              <button onClick={clearCart} style={styles.clearButton} disabled={cart.length === 0}>
+                Clear Cart
+              </button>
+              <button onClick={handleCheckout} style={styles.checkoutButton} disabled={cart.length === 0}>
+                Checkout
+              </button>
             </div>
           </div>
         </div>
