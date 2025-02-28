@@ -281,8 +281,8 @@ function Settings() {
               </select>
               <button
                 onClick={handleTestPrint}
-                disabled={!settings.selected_printer || settings.selected_printer === '' || isPrinting}
-                style={styles.testButton}
+                disabled={!settings.selected_printer || isPrinting}
+                style={!settings.selected_printer || isPrinting ? styles.testButtonDisabled : styles.testButton}
               >
                 {isPrinting ? 'Printing...' : 'Print Test Receipt'}
               </button>
@@ -490,10 +490,15 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    '&:disabled': {
-      backgroundColor: '#6c757d',
-      cursor: 'not-allowed',
-    },
+  },
+  testButtonDisabled: {
+    marginLeft: '10px',
+    padding: '8px 16px',
+    backgroundColor: '#6c757d',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'not-allowed',
   },
 };
 
