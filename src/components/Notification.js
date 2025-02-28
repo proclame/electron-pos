@@ -13,9 +13,6 @@ function Notification({ message, type, onClose }) {
 
 const styles = {
   notification: (type) => ({
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
     padding: '12px 24px',
     backgroundColor: type === 'error' ? '#dc3545' : '#28a745',
     color: 'white',
@@ -24,7 +21,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    zIndex: 1000,
     animation: 'slideIn 0.3s ease-out',
   }),
   closeButton: {

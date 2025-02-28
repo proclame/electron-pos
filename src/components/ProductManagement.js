@@ -101,7 +101,9 @@ function ProductManagement() {
           console.log(response);
           if (response.ok) {
             showNotification('Products imported successfully');
-            showNotification(response.errors.length + 'products not imported', 'error');
+            Object.entries(response.errors).forEach(([code, count]) => {
+              showNotification(`${count} products with code ${code} not imported`, 'error');
+            });
             fetchProducts();
           } else {
             showNotification('Error importing products', 'error');

@@ -116,11 +116,16 @@ class ProductsRepository {
             stmt.run(record.name, record.barcode, record.product_code, parseFloat(record.unit_price));
             return { count: results.count + 1, errors: results.errors };
           } catch (error) {
-            console.error('Error importing row:', error, record);
-            return { count: results.count, errors: [...results.errors, error] };
+            const errors = results.errors;
+            if (error.code in errors) {
+              errors[error.code]++;
+            } else {
+              errors[error.code] = 1;
+            }
+            return { count: results.count, errors: errors };
           }
         },
-        { count: 0, errors: [] },
+        { count: 0, errors: {} },
       );
 
       return { ok: true, ...results };
