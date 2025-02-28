@@ -2,43 +2,45 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProductManagement from './components/ProductManagement';
 import Settings from './components/Settings';
-import SalesManager from './components/SalesManager';
 import POSSystem from './components/POSSystem';
 import SalesHistory from './components/SalesHistory';
 import DiscountManagement from './components/DiscountManagement';
 import { SalesProvider } from './contexts/SalesContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 function App() {
   return (
-    <SalesProvider>
-      <Router>
-        <div style={styles.nav}>
-          <Link to="/" style={styles.navLink}>
-            POS
-          </Link>
-          <Link to="/products" style={styles.navLink}>
-            Products
-          </Link>
-          <Link to="/sales" style={styles.navLink}>
-            Sales
-          </Link>
-          <Link to="/discounts" style={styles.navLink}>
-            Discounts
-          </Link>
-          <Link to="/settings" style={styles.navLink}>
-            Settings
-          </Link>
-        </div>
+    <NotificationProvider>
+      <SalesProvider>
+        <Router>
+          <div style={styles.nav}>
+            <Link to="/" style={styles.navLink}>
+              POS
+            </Link>
+            <Link to="/products" style={styles.navLink}>
+              Products
+            </Link>
+            <Link to="/sales" style={styles.navLink}>
+              Sales
+            </Link>
+            <Link to="/discounts" style={styles.navLink}>
+              Discounts
+            </Link>
+            <Link to="/settings" style={styles.navLink}>
+              Settings
+            </Link>
+          </div>
 
-        <Routes>
-          <Route path="/" element={<POSSystem />} />
-          <Route path="/products" element={<ProductManagement />} />
-          <Route path="/sales" element={<SalesHistory />} />
-          <Route path="/discounts" element={<DiscountManagement />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </Router>
-    </SalesProvider>
+          <Routes>
+            <Route path="/" element={<POSSystem />} />
+            <Route path="/products" element={<ProductManagement />} />
+            <Route path="/sales" element={<SalesHistory />} />
+            <Route path="/discounts" element={<DiscountManagement />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Router>
+      </SalesProvider>
+    </NotificationProvider>
   );
 }
 

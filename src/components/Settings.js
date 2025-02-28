@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
 
 function Settings() {
+  const { showNotification } = useNotification();
   const [settings, setSettings] = useState({
     vat_number: '',
     vat_percentage: 21.0,
@@ -136,10 +138,10 @@ function Settings() {
       };
 
       await window.electronAPI.print.printReceipt(testSale, selectedPrinter);
-      alert('Test receipt printed successfully!');
+      showNotification('Test receipt printed successfully!');
     } catch (error) {
       console.error('Error printing test receipt:', error);
-      alert(error.message || 'Failed to print test receipt');
+      showNotification(error.message || 'Failed to print test receipt', 'error');
     } finally {
       setIsPrinting(false);
     }
