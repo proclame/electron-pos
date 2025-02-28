@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
 
 function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -16,6 +17,7 @@ function ProductManagement() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
   const [totalProducts, setTotalProducts] = useState(0);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     fetchProducts();
@@ -61,12 +63,13 @@ function ProductManagement() {
       if (response.ok) {
         fetchProducts();
         setEditingProduct(null);
+        showNotification('Product saved successfully!');
       } else {
-        alert('Error updating product');
+        showNotification('Error updating product', 'error');
       }
     } catch (err) {
       console.error('Error updating product:', err);
-      alert('Error updating product');
+      showNotification('Error updating product', 'error');
     }
   };
 
@@ -78,14 +81,14 @@ function ProductManagement() {
         try {
           const response = await window.electronAPI.products.importProducts(e.target.result);
           if (response.ok) {
-            alert('Products imported successfully');
+            showNotification('Products imported successfully');
             fetchProducts();
           } else {
-            alert('Error importing products');
+            showNotification('Error importing products', 'error');
           }
         } catch (err) {
           console.error('Error importing products:', err);
-          alert('Error importing products');
+          showNotification('Error importing products', 'error');
         }
         fileInputRef.current.value = '';
       };

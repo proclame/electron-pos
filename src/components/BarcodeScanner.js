@@ -1,7 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { SPECIAL_BARCODES } from '../constants/barcodes';
+import { useNotification } from '../contexts/NotificationContext';
 
 function BarcodeScanner({ onProductScanned, onSpecialBarcode, isSuspendedBarcodeInput, suspendTimeoutRef }) {
+  const { showNotification } = useNotification();
   const [barcodeInput, setBarcodeInput] = React.useState('');
   const barcodeInputRef = useRef(null);
 
@@ -43,7 +45,7 @@ function BarcodeScanner({ onProductScanned, onSpecialBarcode, isSuspendedBarcode
         onProductScanned(product);
       } catch (err) {
         console.error('Error finding product:', err);
-        alert('Product not found!');
+        showNotification('Product not found!', 'error');
       }
       setBarcodeInput('');
       barcodeInputRef.current?.focus();

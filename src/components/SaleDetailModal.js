@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNotification } from '../contexts/NotificationContext';
 
 function SaleDetailModal({ sale, isOpen, onClose }) {
+  const { showNotification } = useNotification();
   const [isPrinting, setIsPrinting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedNotes, setEditedNotes] = useState('');
@@ -78,9 +80,10 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
       if (!response.ok) {
         throw new Error('Failed to print receipt');
       }
+      showNotification('Receipt printed successfully!');
     } catch (error) {
       console.error('Error printing receipt:', error);
-      alert('Failed to print receipt');
+      showNotification('Failed to print receipt', 'error');
     } finally {
       setIsPrinting(false);
     }
@@ -103,7 +106,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
       }
     } catch (error) {
       console.error('Error updating sale:', error);
-      alert('Failed to update sale');
+      showNotification('Failed to update sale', 'error');
     } finally {
       setIsSaving(false);
     }

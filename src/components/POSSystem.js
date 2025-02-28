@@ -7,6 +7,7 @@ import TotalsPanel from './TotalsPanel';
 import BarcodeScanner from './BarcodeScanner';
 import SalesManager from './SalesManager';
 import { useSales } from '../contexts/SalesContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 function POSSystem() {
   const { currentSale, saveCurrentSale, putSaleOnHold, currentSaleId, isInitialLoad, setIsInitialLoad } = useSales();
@@ -25,6 +26,7 @@ function POSSystem() {
   const suspendTimeoutRef = useRef(null);
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     setCart(currentSale?.cart || []);
@@ -177,17 +179,17 @@ function POSSystem() {
           }
         } catch (printError) {
           console.error('Error printing receipt:', printError);
-          alert('Sale completed but failed to print receipt');
+          showNotification('Sale completed but failed to print receipt', 'error');
         }
 
-        alert('Sale completed successfully!');
+        showNotification('Sale completed successfully!');
         clearCart();
       } else {
-        alert('Error completing sale');
+        showNotification('Error completing sale', 'error');
       }
     } catch (err) {
       console.error('Error during checkout:', err);
-      alert('Error completing sale');
+      showNotification('Error completing sale', 'error');
     }
   };
 
