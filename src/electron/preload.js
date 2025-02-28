@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateProduct: (id, product) => ipcRenderer.invoke('products:update-product', { id, product }),
     deleteProduct: (id) => ipcRenderer.invoke('products:delete-product', id),
     importProducts: (csvData) => ipcRenderer.invoke('products:import-products', csvData),
+    clearAllProducts: () => ipcRenderer.invoke('products:clear-all'),
   },
   activeSales: {
     getActiveSales: () => ipcRenderer.invoke('active-sales:get-active-sales'),

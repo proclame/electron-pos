@@ -6,6 +6,7 @@ const createActiveSalesTable = require('./005_create_active_sales_table');
 const seedInitialProducts = require('./006_seed_initial_products');
 const addEmailSettings = require('./007_add_email_settings');
 const createDiscountsTable = require('./008_create_discounts_table');
+const addArchivedAtToProducts = require('./009_add_archived_at_to_products');
 
 const migrations = [
   createProductsTable,
@@ -16,6 +17,7 @@ const migrations = [
   seedInitialProducts,
   addEmailSettings,
   createDiscountsTable,
+  addArchivedAtToProducts,
 ];
 
 async function runMigrations(db) {

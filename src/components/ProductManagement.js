@@ -18,6 +18,24 @@ function ProductManagement() {
   const [pageSize] = useState(50);
   const [totalProducts, setTotalProducts] = useState(0);
   const { showNotification } = useNotification();
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleClearAllProducts = async () => {
+    if (window.confirm('Are you sure you want to delete ALL products? This action cannot be undone!')) {
+      try {
+        setIsClearing(true);
+        await window.electronAPI.products.clearAllProducts();
+        setProducts([]);
+        setTotalProducts(0);
+        showNotification('All products have been deleted successfully');
+      } catch (error) {
+        console.error('Error clearing products:', error);
+        showNotification('Failed to clear products', 'error');
+      } finally {
+        setIsClearing(false);
+      }
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -80,8 +98,10 @@ function ProductManagement() {
       reader.onload = async (e) => {
         try {
           const response = await window.electronAPI.products.importProducts(e.target.result);
+          console.log(response);
           if (response.ok) {
             showNotification('Products imported successfully');
+            showNotification(response.errors.length + 'products not imported', 'error');
             fetchProducts();
           } else {
             showNotification('Error importing products', 'error');
@@ -103,6 +123,19 @@ function ProductManagement() {
   return (
     <div style={styles.container}>
       <h1>Product Management</h1>
+      <div style={styles.headerActions}>
+        <button
+          onClick={handleClearAllProducts}
+          disabled={isClearing || products.length === 0}
+          style={{
+            ...styles.dangerButton,
+            opacity: isClearing || products.length === 0 ? 0.6 : 1,
+            cursor: isClearing || products.length === 0 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isClearing ? 'Clearing...' : 'Clear All Products'}
+        </button>
+      </div>
 
       <div style={styles.importSection}>
         <input type="file" accept=".csv" onChange={handleFileUpload} ref={fileInputRef} style={styles.fileInput} />
@@ -307,6 +340,21 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+  },
+  headerActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '20px',
+  },
+  dangerButton: {
+    padding: '8px 16px',
+    backgroundColor: '#dc3545',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    transition: 'opacity 0.2s ease',
   },
 };
 

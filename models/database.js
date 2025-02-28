@@ -11,11 +11,11 @@ const DatabaseError = require('./DatabaseError');
 const dbPath = path.join(app.getPath('downloads'), 'database.sqlite');
 
 const db = new Database(dbPath, {
-  verbose: (message) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[SQL] ${message.trim()}`);
-    }
-  },
+  // verbose: (message) => {
+  //   if (process.env.NODE_ENV !== 'production') {
+  //     console.log(`[SQL] ${message.trim()}`);
+  //   }
+  // },
 });
 
 // Add transaction helper

@@ -91,6 +91,16 @@ function registerProductsHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle('products:clear-all', async () => {
+    try {
+      await productsRepo.clearAll();
+      return { ok: true };
+    } catch (error) {
+      console.error('Error clearing products:', error);
+      throw error;
+    }
+  });
 }
 
 module.exports = registerProductsHandlers;

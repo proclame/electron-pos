@@ -5,11 +5,11 @@ class ProductsRepository {
 
   getProducts({ page = 1, pageSize = 10, search = '' }) {
     const offset = (page - 1) * pageSize;
-    let whereClause = '';
+    let whereClause = 'WHERE archived_at IS NULL';
     let params = [];
 
     if (search) {
-      whereClause = 'WHERE name LIKE ? OR barcode LIKE ? OR product_code LIKE ?';
+      whereClause = 'WHERE (name LIKE ? OR barcode LIKE ? OR product_code LIKE ?) AND archived_at IS NULL';
       params = [`%${search}%`, `%${search}%`, `%${search}%`];
     }
 
@@ -39,7 +39,7 @@ class ProductsRepository {
   }
 
   getByBarcode(barcode) {
-    const product = this.db.prepare('SELECT * FROM products WHERE barcode = ?').get(barcode);
+    const product = this.db.prepare('SELECT * FROM products WHERE barcode = ? AND archived_at IS NULL').get(barcode);
     if (!product) {
       throw new Error('Product not found');
     }
@@ -51,7 +51,8 @@ class ProductsRepository {
       .prepare(
         `
             SELECT * FROM products 
-            WHERE name LIKE ? OR barcode LIKE ? OR product_code LIKE ?
+            WHERE (name LIKE ? OR barcode LIKE ? OR product_code LIKE ?) 
+            AND archived_at IS NULL
             LIMIT 10
         `,
       )
@@ -87,7 +88,16 @@ class ProductsRepository {
   }
 
   delete(id) {
-    this.db.prepare('DELETE FROM products WHERE id = ?').run(id);
+    const isUsed = this.isProductUsedInSales(id);
+
+    if (isUsed) {
+      // Soft delete - set archived_at
+      this.db.prepare('UPDATE products SET archived_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    } else {
+      // Hard delete - remove from database
+      this.db.prepare('DELETE FROM products WHERE id = ?').run(id);
+    }
+
     return { success: true };
   }
 
@@ -100,18 +110,44 @@ class ProductsRepository {
                 ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `);
 
-      const importedCount = records.reduce((count, record) => {
-        try {
-          stmt.run(record.name, record.barcode, record.product_code, parseFloat(record.unit_price));
-          return count + 1;
-        } catch (error) {
-          console.error('Error importing row:', error, record);
-          return count;
-        }
-      }, 0);
+      const results = records.reduce(
+        (results, record) => {
+          try {
+            stmt.run(record.name, record.barcode, record.product_code, parseFloat(record.unit_price));
+            return { count: results.count + 1, errors: results.errors };
+          } catch (error) {
+            console.error('Error importing row:', error, record);
+            return { count: results.count, errors: [...results.errors, error] };
+          }
+        },
+        { count: 0, errors: [] },
+      );
 
-      return { ok: true, importedCount };
+      return { ok: true, ...results };
     });
+  }
+
+  clearAll() {
+    // First, archive products that are used in sales
+    this.db
+      .prepare(
+        `
+      UPDATE products 
+      SET archived_at = CURRENT_TIMESTAMP, barcode = NULL
+      WHERE id IN (
+        SELECT DISTINCT product_id FROM sale_items
+      ) AND archived_at IS NULL
+    `,
+      )
+      .run();
+
+    // Then delete products that aren't used
+    return this.db.prepare('DELETE FROM products WHERE archived_at IS NULL').run();
+  }
+
+  isProductUsedInSales(productId) {
+    const result = this.db.prepare('SELECT COUNT(*) as count FROM sale_items WHERE product_id = ?').get(productId);
+    return result.count > 0;
   }
 }
 
