@@ -9,7 +9,7 @@ let handlersRegistered = false;
 async function init() {
   try {
     await initDatabase();
-    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    const isDev = !app.isPackaged;
     if (!handlersRegistered) {
       registerIpcHandlers();
       handlersRegistered = true;
