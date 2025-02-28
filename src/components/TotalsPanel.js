@@ -1,9 +1,10 @@
 import React from 'react';
 
 function TotalsPanel({ total, appliedDiscounts }) {
+  const discountAmount = Math.max(0, Math.min(total, appliedDiscounts.fixed?.value ?? 0));
   return (
     <div style={styles.totalsBreakdown}>
-      {appliedDiscounts.fixed && (
+      {discountAmount > 0 && (
         <div>
           <div style={styles.totalRow}>
             <span>Subtotal:</span>
@@ -11,13 +12,13 @@ function TotalsPanel({ total, appliedDiscounts }) {
           </div>
           <div style={styles.totalRow}>
             <span>Discount ({appliedDiscounts.fixed.name}):</span>
-            <span style={styles.discountAmount}>-€{appliedDiscounts.fixed.value.toFixed(2)}</span>
+            <span style={styles.discountAmount}>-€{discountAmount.toFixed(2)}</span>
           </div>
         </div>
       )}
       <div style={styles.totalRowFinal}>
         <span>Total:</span>
-        <span>€{(total - Math.min(total, appliedDiscounts.fixed?.value ?? 0)).toFixed(2)}</span>
+        <span>€{(total - discountAmount).toFixed(2)}</span>
       </div>
     </div>
   );

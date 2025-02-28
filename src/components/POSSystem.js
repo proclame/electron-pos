@@ -150,8 +150,8 @@ function POSSystem() {
 
       // Calculate sale totals
       const subtotal = itemsWithDiscounts.reduce((sum, item) => sum + item.total, 0);
-      const fixedDiscountAmount = appliedDiscounts.fixed?.value ?? 0;
-      const finalTotal = subtotal - Math.min(subtotal, fixedDiscountAmount);
+      const fixedDiscountAmount = Math.max(0, Math.min(subtotal, appliedDiscounts.fixed?.value ?? 0));
+      const finalTotal = subtotal - fixedDiscountAmount;
 
       const saleData = {
         items: itemsWithDiscounts,
