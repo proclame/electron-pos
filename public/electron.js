@@ -4,11 +4,16 @@ const WindowManager = require('../src/electron/WindowManager');
 const registerIpcHandlers = require('../src/electron/ipc');
 const { initDatabase } = require('../models/database');
 
+let handlersRegistered = false;
+
 async function init() {
   try {
     await initDatabase();
-    const isDev = await import('electron-is-dev').then((module) => module.default);
-    registerIpcHandlers();
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    if (!handlersRegistered) {
+      registerIpcHandlers();
+      handlersRegistered = true;
+    }
     await WindowManager.createMainWindow(isDev);
   } catch (error) {
     console.error('Error during startup:', error);
