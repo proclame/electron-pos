@@ -5,6 +5,7 @@ import CartTable from './CartTable';
 import DiscountsPanel from './DiscountsPanel';
 import TotalsPanel from './TotalsPanel';
 import BarcodeScanner from './BarcodeScanner';
+import SalesManager from './SalesManager';
 import { useSales } from '../contexts/SalesContext';
 
 function POSSystem() {
@@ -382,6 +383,7 @@ function POSSystem() {
           closeHoldModal();
         }}
       />
+      <SalesManager />
     </div>
   );
 }

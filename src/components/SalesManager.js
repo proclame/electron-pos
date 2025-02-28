@@ -22,7 +22,7 @@ function SalesManager() {
                 <div>Total: €{sale.total.toFixed(2)}</div>
                 {sale.notes && <div style={styles.notes}>Notes: {sale.notes}</div>}
               </div>
-              <button onClick={() => resumeSale(sale.id)} style={styles.resumeButton}>
+              <button onClick={() => resumeSale(sale.id) && setIsExpanded(false)} style={styles.resumeButton}>
                 Resume Sale
               </button>
             </div>

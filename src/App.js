@@ -37,8 +37,6 @@ function App() {
           <Route path="/discounts" element={<DiscountManagement />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
-
-        <SalesManager />
       </Router>
     </SalesProvider>
   );
