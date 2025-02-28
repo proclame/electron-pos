@@ -23,6 +23,7 @@ function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [printers, setPrinters] = useState([]);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const handleChange = (key, value) => {
     setSettings((prev) => ({
@@ -90,6 +91,51 @@ function Settings() {
       ...prev,
       logo_base64: '',
     }));
+  };
+
+  const handleTestPrint = async () => {
+    try {
+      setIsPrinting(true);
+      const testSale = {
+        id: 'TEST',
+        items: [
+          {
+            product: {
+              name: 'Test Product 1',
+              unit_price: 10.0,
+            },
+            quantity: 1,
+            subtotal: 10.0,
+            discount_percentage: 0,
+            total: 10.0,
+          },
+          {
+            product: {
+              name: 'Test Product 2',
+              unit_price: 15.0,
+            },
+            quantity: 2,
+            subtotal: 30.0,
+            discount_percentage: 10,
+            total: 27.0,
+          },
+        ],
+        subtotal: 37.0,
+        discount_amount: 5.0,
+        total: 32.0,
+        payment_method: 'cash',
+        notes: 'Test Receipt',
+        created_at: new Date().toISOString(),
+      };
+
+      await window.electronAPI.print.printReceipt(testSale);
+      alert('Test receipt printed successfully!');
+    } catch (error) {
+      console.error('Error printing test receipt:', error);
+      alert('Failed to print test receipt');
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   return (
@@ -226,6 +272,13 @@ function Settings() {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={handleTestPrint}
+                disabled={!settings.selected_printer || isPrinting}
+                style={styles.testButton}
+              >
+                {isPrinting ? 'Printing...' : 'Print Test Receipt'}
+              </button>
             </div>
           )}
         </div>
@@ -421,6 +474,19 @@ const styles = {
   },
   buttonContainer: {
     textAlign: 'center',
+  },
+  testButton: {
+    marginLeft: '10px',
+    padding: '8px 16px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:disabled': {
+      backgroundColor: '#6c757d',
+      cursor: 'not-allowed',
+    },
   },
 };
 
