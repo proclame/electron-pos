@@ -80,7 +80,7 @@ class ReceiptTemplateService {
                 <td>${item.quantity}&nbsp;x</td>
                 <td>${item.product.name}</td>
                 <td>${settings.currency_symbol}${item.product.unit_price.toFixed(2)}</td>
-                <td>${item.discount_percentage || ''}${item.discount_percentage > 0 ? '%' : ''}</td>
+                <td>${item.discount_percentage > 0 ? '-' : ''}${item.discount_percentage || ''}${item.discount_percentage > 0 ? '%' : ''}</td>
                 <td class="right">${settings.currency_symbol}${item.total.toFixed(2)}</td>
             </tr>
         `,

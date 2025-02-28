@@ -89,11 +89,13 @@ function POSSystem() {
 
   // Update removeFromCart
   const removeFromCart = (index) => {
-    setCart((currentCart) => {
-      const newCart = currentCart.filter((_, i) => i !== index);
-      setTotal(calculateTotal(newCart));
-      return newCart;
-    });
+    const newCart = cart.filter((_, i) => i !== index);
+    if (newCart.length === 0) {
+      clearCart();
+      return;
+    }
+    setTotal(calculateTotal(newCart));
+    setCart(newCart);
   };
 
   const handlePutOnHold = async (notes = '') => {
@@ -135,7 +137,7 @@ function POSSystem() {
       // Calculate item totals with percentage discounts
       const itemsWithDiscounts = cart.map((item) => {
         const subtotal = item.quantity * item.product.unit_price;
-        const percentageDiscount = appliedDiscounts.percentage?.value ?? 0;
+        const percentageDiscount = item.discount_percentage ?? appliedDiscounts.percentage?.value ?? 0;
         const discountedTotal = subtotal - (subtotal * percentageDiscount) / 100;
 
         return {

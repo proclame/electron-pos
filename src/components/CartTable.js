@@ -48,7 +48,10 @@ function CartTable({
 
   const handleQuantityUpdate = (index, newQuantity) => {
     // Allow negative quantities only in return mode
-    if (!newQuantity) return;
+    if (!newQuantity) {
+      cancelEditingQuantity();
+      return;
+    }
 
     setCart((currentCart) => {
       const newCart = currentCart.map((item, i) => (i === index ? { ...item, quantity: newQuantity } : item));
