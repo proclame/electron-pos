@@ -71,7 +71,7 @@ class ReceiptTemplateService {
             <th>Item</th>
             <th>Price</th>
             <th></th>
-            <th>Total</th>
+            <th class="right">Total</th>
         </tr>
         ${sale.items
           .map(
