@@ -13,7 +13,6 @@ class EmailService {
     this.settings = await settingsRepo.getAll();
 
     if (this.settings.enable_email !== 'true' || !this.settings.smtp_host) {
-      console.log('Email settings not configured');
       return;
     }
 
@@ -54,8 +53,6 @@ class EmailService {
         },
       ],
     });
-
-    console.log('Message sent: %s', info.messageId);
   }
 }
 

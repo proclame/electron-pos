@@ -98,7 +98,6 @@ function ProductManagement() {
       reader.onload = async (e) => {
         try {
           const response = await window.electronAPI.products.importProducts(e.target.result);
-          console.log(response);
           if (response.ok) {
             showNotification('Products imported successfully');
             Object.entries(response.errors).forEach(([code, count]) => {

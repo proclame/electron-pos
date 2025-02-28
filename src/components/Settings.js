@@ -28,7 +28,6 @@ function Settings() {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handleChange = (key, value) => {
-    console.log('handleChange', key, value);
     setSettings((prev) => ({
       ...prev,
       [key]: value,
@@ -97,7 +96,6 @@ function Settings() {
   };
 
   const handleTestPrint = async () => {
-    console.log('handleTestPrint', settings.selected_printer);
     try {
       setIsPrinting(true);
       const selectedPrinter = settings.selected_printer;

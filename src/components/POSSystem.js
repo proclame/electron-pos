@@ -261,9 +261,17 @@ function POSSystem() {
     const newDiscounts = { ...appliedDiscounts };
 
     if (discount.type === 'percentage') {
-      newDiscounts.percentage = discount;
+      if (newDiscounts.percentage === discount) {
+        newDiscounts.percentage = null;
+      } else {
+        newDiscounts.percentage = discount;
+      }
     } else {
-      newDiscounts.fixed = discount;
+      if (newDiscounts.fixed === discount) {
+        newDiscounts.fixed = null;
+      } else {
+        newDiscounts.fixed = discount;
+      }
     }
 
     setAppliedDiscounts(newDiscounts);
