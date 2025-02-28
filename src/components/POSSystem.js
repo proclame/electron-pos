@@ -62,11 +62,14 @@ function POSSystem() {
     if (existingItem) {
       existingItem.quantity += isReturn ? -1 : 1;
     } else {
-      updatedCart.push({ product, quantity: isReturn ? -1 : 1 });
+      updatedCart.push({
+        product,
+        quantity: isReturn ? -1 : 1,
+        discount_percentage: null,
+      });
     }
 
     const newTotal = calculateTotal(updatedCart);
-
     setCart(updatedCart);
     setTotal(newTotal);
   };
@@ -76,7 +79,10 @@ function POSSystem() {
       (sum, item) =>
         sum +
         item.product.unit_price * item.quantity -
-        (item.product.unit_price * item.quantity * (appliedDiscounts.percentage?.value ?? 0)) / 100,
+        (item.product.unit_price *
+          item.quantity *
+          (item.discount_percentage ?? appliedDiscounts.percentage?.value ?? 0)) /
+          100,
       0,
     );
   };
