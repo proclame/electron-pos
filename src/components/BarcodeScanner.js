@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
+import { SPECIAL_BARCODES } from '../constants/barcodes';
 
-function BarcodeScanner({ onProductScanned, isSuspendedBarcodeInput, suspendTimeoutRef }) {
+function BarcodeScanner({ onProductScanned, onSpecialBarcode, isSuspendedBarcodeInput, suspendTimeoutRef }) {
   const [barcodeInput, setBarcodeInput] = React.useState('');
   const barcodeInputRef = useRef(null);
 
@@ -30,6 +31,13 @@ function BarcodeScanner({ onProductScanned, isSuspendedBarcodeInput, suspendTime
   const handleBarcodeSubmit = async (e) => {
     e.preventDefault();
     if (barcodeInput.trim()) {
+      if (barcodeInput === SPECIAL_BARCODES.CHECKOUT) {
+        onSpecialBarcode('checkout');
+        setBarcodeInput('');
+        barcodeInputRef.current?.focus();
+        return;
+      }
+
       try {
         const product = await window.electronAPI.products.getProductByBarcode(barcodeInput);
         onProductScanned(product);

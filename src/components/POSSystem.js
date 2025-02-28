@@ -267,6 +267,18 @@ function POSSystem() {
     setAppliedDiscounts(newDiscounts);
   };
 
+  const handleSpecialBarcode = (type) => {
+    switch (type) {
+      case 'checkout':
+        if (cart.length > 0) {
+          handleCheckout();
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.leftPanel}>
@@ -285,6 +297,7 @@ function POSSystem() {
         )}
         <BarcodeScanner
           onProductScanned={addProductToCart}
+          onSpecialBarcode={handleSpecialBarcode}
           isSuspendedBarcodeInput={isSuspendedBarcodeInput}
           suspendTimeoutRef={suspendTimeoutRef}
         />
