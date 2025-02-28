@@ -26,6 +26,7 @@ function Settings() {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handleChange = (key, value) => {
+    console.log('handleChange', key, value);
     setSettings((prev) => ({
       ...prev,
       [key]: value,
@@ -94,8 +95,14 @@ function Settings() {
   };
 
   const handleTestPrint = async () => {
+    console.log('handleTestPrint', settings.selected_printer);
     try {
       setIsPrinting(true);
+      const selectedPrinter = settings.selected_printer;
+      if (!selectedPrinter) {
+        throw new Error('No printer selected');
+      }
+
       const testSale = {
         id: 'TEST',
         items: [
@@ -128,11 +135,11 @@ function Settings() {
         created_at: new Date().toISOString(),
       };
 
-      await window.electronAPI.print.printReceipt(testSale);
+      await window.electronAPI.print.printReceipt(testSale, selectedPrinter);
       alert('Test receipt printed successfully!');
     } catch (error) {
       console.error('Error printing test receipt:', error);
-      alert('Failed to print test receipt');
+      alert(error.message || 'Failed to print test receipt');
     } finally {
       setIsPrinting(false);
     }
@@ -274,7 +281,7 @@ function Settings() {
               </select>
               <button
                 onClick={handleTestPrint}
-                disabled={!settings.selected_printer || isPrinting}
+                disabled={!settings.selected_printer || settings.selected_printer === '' || isPrinting}
                 style={styles.testButton}
               >
                 {isPrinting ? 'Printing...' : 'Print Test Receipt'}

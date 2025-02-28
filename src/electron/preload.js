@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getPrinters: () => ipcRenderer.invoke('settings:get-printers'),
   },
   print: {
-    printReceipt: (sale) => ipcRenderer.invoke('print:print-receipt', sale),
+    printReceipt: (sale, printerName = null) => ipcRenderer.invoke('print:print-receipt', sale, printerName),
     generatePDF: (sale) => ipcRenderer.invoke('print:generate-pdf', sale),
   },
   products: {

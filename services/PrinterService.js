@@ -27,19 +27,21 @@ class PrinterService {
     return this.settings;
   }
 
-  async printReceipt(sale) {
+  async printReceipt(sale, printerName = null) {
     // First check if printing is enabled
     await this.getSettings();
-    if (this.settings.use_printer !== 'true') {
+    if (printerName === null && this.settings.use_printer !== 'true') {
       return;
     }
 
     try {
-      if (!this.settings.selected_printer) {
+      // Use provided printer name or fall back to settings
+      const selectedPrinter = printerName || this.settings.selected_printer;
+      if (!selectedPrinter) {
         throw new Error('No printer selected in settings');
       }
 
-      this.printerName = this.settings.selected_printer;
+      this.printerName = selectedPrinter;
 
       let theWindow = new BrowserWindow({
         width: 300,

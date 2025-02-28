@@ -4,9 +4,9 @@ const PDFService = require('../../../services/PDFService');
 
 function registerPrintHandlers() {
   // Print receipt
-  ipcMain.handle('print:print-receipt', async (event, sale) => {
+  ipcMain.handle('print:print-receipt', async (event, sale, printerName = null) => {
     try {
-      await PrinterService.printReceipt(sale);
+      await PrinterService.printReceipt(sale, printerName);
       return { ok: true };
     } catch (error) {
       console.error('Error printing receipt:', error);
