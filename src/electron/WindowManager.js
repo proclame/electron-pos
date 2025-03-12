@@ -10,6 +10,7 @@ class WindowManager {
     const config = getConfig(isDev);
     WindowManager.mainWindow = new BrowserWindow({
       width: 1200,
+      autoHideMenuBar: true,
       height: 800,
       webPreferences: {
         nodeIntegration: false,
