@@ -8,6 +8,7 @@ const addEmailSettings = require('./007_add_email_settings');
 const createDiscountsTable = require('./008_create_discounts_table');
 const addArchivedAtToProducts = require('./009_add_archived_at_to_products');
 const addBarcodeToDiscounts = require('./010_add_barcode_to_discounts');
+const addBarcodeSoundSetting = require('./011_add_barcode_sound_setting');
 
 const migrations = [
   createProductsTable,
@@ -20,6 +21,7 @@ const migrations = [
   createDiscountsTable,
   addArchivedAtToProducts,
   addBarcodeToDiscounts,
+  addBarcodeSoundSetting,
 ];
 
 async function runMigrations(db) {

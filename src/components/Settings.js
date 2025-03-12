@@ -13,6 +13,7 @@ function Settings() {
     logo_base64: '',
     use_printer: true,
     allow_returns: true,
+    barcode_sound_enabled: 'true',
     selected_printer: '',
     enable_email: 'false',
     smtp_host: '',
@@ -303,6 +304,19 @@ function Settings() {
               Enable Returns
             </label>
             <div style={styles.helpText}>Allow processing of returns in the POS system</div>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.barcode_sound_enabled === 'true'}
+                onChange={(e) => handleChange('barcode_sound_enabled', e.target.checked.toString())}
+                style={styles.checkbox}
+              />
+              Enable Barcode Scanner Sounds
+            </label>
+            <div style={styles.helpText}>Play sounds when products are scanned or errors occur</div>
           </div>
         </div>
 

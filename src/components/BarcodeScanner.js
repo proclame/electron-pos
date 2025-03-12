@@ -12,6 +12,46 @@ function BarcodeScanner({
   const { showNotification } = useNotification();
   const [barcodeInput, setBarcodeInput] = useState('');
   const barcodeInputRef = useRef(null);
+  const audioCtx = new AudioContext();
+  const [settings, setSettings] = useState({ barcode_sound_enabled: 'true' });
+
+  useEffect(() => {
+    // Fetch settings on component mount
+    const fetchSettings = async () => {
+      try {
+        const appSettings = await window.electronAPI.settings.getSettings();
+        setSettings(appSettings);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const playSound = (herz = 440, gain = 1, length = 0.35) => {
+    // Only play sound if it's enabled in settings
+    if (settings.barcode_sound_enabled !== 'true') return;
+
+    const oscillator = audioCtx.createOscillator();
+    const volume = audioCtx.createGain();
+    volume.gain.value = gain;
+
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(herz, audioCtx.currentTime); // value in hertz
+    oscillator.connect(volume);
+    volume.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + length);
+  };
+
+  const playSuccessSound = () => {
+    playSound(880, 0.5, 0.35);
+  };
+
+  const playErrorSound = () => {
+    playSound(110, 0.5, 0.35);
+  };
 
   useEffect(() => {
     if (!isSuspendedBarcodeInput) {
@@ -59,9 +99,11 @@ function BarcodeScanner({
       try {
         const product = await window.electronAPI.products.getProductByBarcode(barcodeInput);
         onProductScanned(product);
+        playSuccessSound();
       } catch (err) {
         console.error('Error finding product:', err);
         showNotification('Product not found!', 'error');
+        playErrorSound();
       }
       setBarcodeInput('');
       barcodeInputRef.current?.focus();
