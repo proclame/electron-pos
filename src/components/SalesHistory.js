@@ -46,10 +46,10 @@ function SalesHistory() {
 
   const loadProductSales = async () => {
     try {
-      const queryParams = new URLSearchParams({
+      const queryParams = {
         startDate: dateFilter.startDate,
         endDate: dateFilter.endDate,
-      });
+      };
 
       const response = await window.electronAPI.sales.getSalesByProduct(queryParams);
       setProductSales(response);
@@ -90,6 +90,13 @@ function SalesHistory() {
 
   return (
     <div style={styles.container}>
+      <style>
+        {`
+          td {
+            padding: 4px;
+          }
+        `}
+      </style>
       <h2>Sales History</h2>
 
       <div style={styles.tabs}>
@@ -222,7 +229,8 @@ function SalesHistory() {
 const styles = {
   container: {
     padding: '20px',
-    maxWidth: '1200px',
+    width: '100%',
+    maxWidth: '1800px',
     margin: '0 auto',
   },
   filters: {

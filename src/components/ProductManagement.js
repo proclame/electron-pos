@@ -123,6 +123,13 @@ function ProductManagement() {
 
   return (
     <div style={styles.container}>
+      <style>
+        {`
+          td {
+            padding: 4px;
+          }
+      `}
+      </style>
       <h1>Product Management</h1>
       <div style={styles.headerActions}>
         <button
@@ -139,6 +146,7 @@ function ProductManagement() {
       </div>
 
       <div style={styles.importSection}>
+        <h2 style={styles.importTitle}>Import Products</h2>
         <input type="file" accept=".csv" onChange={handleFileUpload} ref={fileInputRef} style={styles.fileInput} />
         <p style={styles.importHelp}>CSV format: name,size,color,unit_price,barcode,product_code</p>
       </div>
@@ -177,49 +185,51 @@ function ProductManagement() {
       </div>
 
       {editingProduct && (
-        <div style={styles.editForm}>
-          <h2>Edit Product</h2>
-          <form onSubmit={handleSubmit}>
-            <div style={styles.formGroup}>
-              <label>Name:</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-            </div>
-            <div style={styles.formGroup}>
-              <label>Size:</label>
-              <input type="text" name="size" value={formData.size} onChange={handleChange} />
-            </div>
-            <div style={styles.formGroup}>
-              <label>Color:</label>
-              <input type="text" name="color" value={formData.color} onChange={handleChange} />
-            </div>
-            <div style={styles.formGroup}>
-              <label>Price:</label>
-              <input
-                type="number"
-                step="0.01"
-                name="unit_price"
-                value={formData.unit_price}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div style={styles.formGroup}>
-              <label>Barcode:</label>
-              <input type="text" name="barcode" value={formData.barcode} onChange={handleChange} required />
-            </div>
-            <div style={styles.formGroup}>
-              <label>Product Code:</label>
-              <input type="text" name="product_code" value={formData.product_code} onChange={handleChange} required />
-            </div>
-            <div style={styles.formButtons}>
-              <button type="submit" style={styles.saveButton}>
-                Save
-              </button>
-              <button type="button" onClick={() => setEditingProduct(null)} style={styles.cancelButton}>
-                Cancel
-              </button>
-            </div>
-          </form>
+        <div style={styles.editFormOverlay} onClick={() => setEditingProduct(null)}>
+          <div style={styles.editForm} onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Product</h2>
+            <form onSubmit={handleSubmit}>
+              <div style={styles.formGroup}>
+                <label>Name:</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Size:</label>
+                <input type="text" name="size" value={formData.size} onChange={handleChange} />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Color:</label>
+                <input type="text" name="color" value={formData.color} onChange={handleChange} />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Price:</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="unit_price"
+                  value={formData.unit_price}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Barcode:</label>
+                <input type="text" name="barcode" value={formData.barcode} onChange={handleChange} required />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Product Code:</label>
+                <input type="text" name="product_code" value={formData.product_code} onChange={handleChange} required />
+              </div>
+              <div style={styles.formButtons}>
+                <button type="submit" style={styles.saveButton}>
+                  Save
+                </button>
+                <button type="button" onClick={() => setEditingProduct(null)} style={styles.cancelButton}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -249,17 +259,20 @@ function ProductManagement() {
 const styles = {
   container: {
     padding: '20px',
-    maxWidth: '1200px',
+    width: '100%',
+    maxWidth: '1800px',
     margin: '0 auto',
   },
   productList: {
     marginTop: '20px',
+    padding: '20px',
+    backgroundColor: 'white',
+    borderRadius: '5px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    backgroundColor: 'white',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
   },
   editButton: {
     padding: '4px 8px',
@@ -270,11 +283,25 @@ const styles = {
     cursor: 'pointer',
   },
   editForm: {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    minWidth: '600px',
     marginTop: '20px',
     padding: '20px',
     backgroundColor: 'white',
     borderRadius: '5px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+  },
+  editFormOverlay: {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
   formGroup: {
     marginBottom: '15px',
@@ -314,6 +341,10 @@ const styles = {
     backgroundColor: '#f8f9fa',
     borderRadius: '5px',
     border: '1px solid #ddd',
+  },
+  importTitle: {
+    marginBottom: '10px',
+    marginTop: '0',
   },
   importHelp: {
     margin: '10px 0 0',

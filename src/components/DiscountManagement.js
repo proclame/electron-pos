@@ -87,11 +87,20 @@ function DiscountManagement() {
 
   return (
     <div style={styles.container}>
+      <style>
+        {`
+          td {
+            padding: 4px;
+          }
+        `}
+      </style>
+
       <h2>Discount Management</h2>
 
       <form onSubmit={handleSubmit} style={styles.form}>
+        <h3 style={styles.formTitle}>{editingId ? 'Update Discount' : 'Add Discount'}</h3>
         <div style={styles.formGroup}>
-          <label>Name:</label>
+          <label style={styles.label}>Name:</label>
           <input
             type="text"
             value={newDiscount.name}
@@ -101,7 +110,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
-          <label>Type:</label>
+          <label style={styles.label}>Type:</label>
           <select value={newDiscount.type} onChange={(e) => setNewDiscount({ ...newDiscount, type: e.target.value })}>
             <option value="percentage">Percentage</option>
             <option value="fixed">Fixed Amount</option>
@@ -109,7 +118,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
-          <label>Value:</label>
+          <label style={styles.label}>Value:</label>
           <input
             type="number"
             step="0.01"
@@ -120,6 +129,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
+          <span style={styles.label}></span>
           <label>
             <input
               type="checkbox"
@@ -131,7 +141,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
-          <label>Minimum Cart Value:</label>
+          <label style={styles.label}>Minimum Cart Value:</label>
           <input
             type="number"
             step="0.01"
@@ -141,6 +151,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
+          <span style={styles.label}></span>
           <label>
             <input
               type="checkbox"
@@ -152,7 +163,7 @@ function DiscountManagement() {
         </div>
 
         <div style={styles.formGroup}>
-          <label>Barcode (for quick toggle):</label>
+          <label style={styles.label}>Barcode (for quick toggle):</label>
           <div style={styles.barcodeInputGroup}>
             <input
               type="text"
@@ -214,13 +225,28 @@ function DiscountManagement() {
 const styles = {
   container: {
     padding: '20px',
+    width: '100%',
+    maxWidth: '1800px',
+    margin: '0 auto',
   },
   form: {
     marginBottom: '20px',
-    maxWidth: '500px',
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
   },
   formGroup: {
+    display: 'flex',
     marginBottom: '10px',
+  },
+  label: {
+    marginRight: '10px',
+    width: '240px',
+  },
+  formTitle: {
+    marginBottom: '10px',
+    marginTop: '0',
   },
   button: {
     padding: '8px 16px',
@@ -267,6 +293,7 @@ const styles = {
     fontSize: '12px',
     color: '#6c757d',
     marginTop: '5px',
+    marginLeft: '20px',
   },
 };
 

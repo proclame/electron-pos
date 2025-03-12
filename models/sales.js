@@ -9,14 +9,14 @@ class SalesRepository {
     let params = [];
 
     if (startDate && endDate) {
-      whereClause = 'WHERE created_at BETWEEN ? AND ?';
+      whereClause = `WHERE s.created_at BETWEEN ? AND ?`;
       params = [startDate, endDate + ' 23:59:59'];
     }
 
     // Get total count
     const countQuery = `
             SELECT COUNT(*) as total 
-            FROM sales 
+            FROM sales s
             ${whereClause}
         `;
     const { total } = this.db.prepare(countQuery).get(...params);
@@ -37,7 +37,7 @@ class SalesRepository {
                 ) as items
             FROM sales s
             LEFT JOIN sale_items si ON s.id = si.sale_id
-            LEFT JOIN products p ON si.product_id = p.id
+            LEFT JOIN products p ON si.product_id = p.ID
             ${whereClause}
             GROUP BY s.id
             ORDER BY s.created_at DESC
