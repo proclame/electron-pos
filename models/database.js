@@ -8,7 +8,14 @@ const ActiveSalesRepository = require('./active-sales');
 const SalesRepository = require('./sales');
 const DatabaseError = require('./DatabaseError');
 
-const dbPath = path.join(app.getPath('downloads'), 'database.sqlite');
+const dbPath = path.join(app.getPath('documents'), 'pos-system', 'database.sqlite');
+
+var fs = require('fs');
+var dir = path.join(app.getPath('documents'), 'pos-system');
+
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
 
 const db = new Database(dbPath, {
   // verbose: (message) => {
