@@ -8,6 +8,10 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
   const [editedNotes, setEditedNotes] = useState('');
   const [editedNeedsInvoice, setEditedNeedsInvoice] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [emailSettings, setEmailSettings] = useState(null);
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // Handle Escape key
   useEffect(() => {
@@ -30,13 +34,36 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
       setEditedNotes(sale.notes || '');
       setEditedNeedsInvoice(!!sale.needs_invoice);
       setIsEditing(false);
+      setShowEmailForm(false);
+      setCustomerEmail('');
     }
   }, [sale]);
+
+  useEffect(() => {
+    // Fetch email settings when modal opens
+    if (isOpen) {
+      fetchEmailSettings();
+    }
+  }, [isOpen]);
+
+  const fetchEmailSettings = async () => {
+    try {
+      const settings = await window.electronAPI.settings.getSettings();
+      setEmailSettings({
+        enabled: settings.enable_email === 'true',
+      });
+    } catch (error) {
+      console.error('Error fetching email settings:', error);
+      setEmailSettings({ enabled: false });
+    }
+  };
 
   const handleClose = () => {
     setIsEditing(false);
     setIsPrinting(false);
     setIsSaving(false);
+    setShowEmailForm(false);
+    setCustomerEmail('');
     onClose();
   };
 
@@ -112,6 +139,55 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     }
   };
 
+  const handleEmailReceipt = async (e) => {
+    e.preventDefault();
+
+    if (!customerEmail.trim()) {
+      showNotification('Please enter a valid email address', 'error');
+      return;
+    }
+
+    try {
+      setIsSendingEmail(true);
+      const response = await window.electronAPI.email.sendReceipt(
+        {
+          id: sale.id,
+          items: sale.items.map((item) => ({
+            product: {
+              id: item.product_id,
+              name: item.product_name,
+              unit_price: item.unit_price,
+            },
+            subtotal: item.subtotal,
+            discount_percentage: item.discount_percentage,
+            total: item.total,
+            quantity: item.quantity,
+          })),
+          subtotal: sale.subtotal,
+          discount_amount: sale.discount_amount,
+          total: sale.total,
+          payment_method: sale.payment_method,
+          needs_invoice: sale.needs_invoice,
+          notes: sale.notes,
+        },
+        customerEmail,
+      );
+
+      if (response.ok) {
+        showNotification('Receipt sent successfully!');
+        setShowEmailForm(false);
+        setCustomerEmail('');
+      } else {
+        throw new Error('Failed to send receipt');
+      }
+    } catch (error) {
+      console.error('Error sending receipt by email:', error);
+      showNotification('Failed to send receipt by email', 'error');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   return (
     <div style={styles.modalOverlay} onClick={handleOverlayClick}>
       <div style={styles.modalContent}>
@@ -178,7 +254,42 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
             <button onClick={handleReprint} style={styles.button} disabled={isPrinting}>
               {isPrinting ? 'Printing...' : 'Reprint Receipt'}
             </button>
+
+            {emailSettings && emailSettings.enabled && (
+              <button
+                onClick={() => setShowEmailForm(!showEmailForm)}
+                style={styles.emailButton}
+                disabled={isSendingEmail}
+              >
+                {showEmailForm ? 'Cancel Email' : 'Email Receipt'}
+              </button>
+            )}
           </div>
+
+          {showEmailForm && emailSettings && emailSettings.enabled && (
+            <div style={styles.emailForm}>
+              <form onSubmit={handleEmailReceipt}>
+                <div style={styles.formGroup}>
+                  <label htmlFor="customerEmail">Customer Email:</label>
+                  <div style={styles.emailInputContainer}>
+                    <input
+                      type="email"
+                      id="customerEmail"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      style={styles.emailInput}
+                      placeholder="customer@example.com"
+                      required
+                      disabled={isSendingEmail}
+                    />
+                    <button type="submit" style={styles.sendEmailButton} disabled={isSendingEmail}>
+                      {isSendingEmail ? 'Sending...' : 'Send'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          )}
 
           <div style={styles.editSection}>
             <div style={styles.editHeader}>
@@ -313,6 +424,7 @@ const styles = {
     marginTop: '20px',
     display: 'flex',
     justifyContent: 'flex-end',
+    gap: '10px',
   },
   button: {
     padding: '8px 16px',
@@ -370,6 +482,47 @@ const styles = {
   },
   viewInfo: {
     lineHeight: '1.5',
+  },
+  emailButton: {
+    padding: '8px 16px',
+    backgroundColor: '#17a2b8',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:disabled': {
+      backgroundColor: '#ccc',
+      cursor: 'not-allowed',
+    },
+  },
+  emailForm: {
+    marginTop: '15px',
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+  },
+  emailInputContainer: {
+    display: 'flex',
+    gap: '10px',
+  },
+  emailInput: {
+    flex: 1,
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+  },
+  sendEmailButton: {
+    padding: '8px 16px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:disabled': {
+      backgroundColor: '#ccc',
+      cursor: 'not-allowed',
+    },
   },
 };
 
