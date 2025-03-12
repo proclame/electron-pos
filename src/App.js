@@ -13,31 +13,47 @@ function App() {
     <NotificationProvider>
       <SalesProvider>
         <Router>
-          <div style={styles.nav}>
-            <Link to="/" style={styles.navLink}>
-              POS
-            </Link>
-            <Link to="/products" style={styles.navLink}>
-              Products
-            </Link>
-            <Link to="/sales" style={styles.navLink}>
-              Sales
-            </Link>
-            <Link to="/discounts" style={styles.navLink}>
-              Discounts
-            </Link>
-            <Link to="/settings" style={styles.navLink}>
-              Settings
-            </Link>
-          </div>
+          <style>
+            {`
+              .nav-link {
+                text-decoration: none;
+                color: #1D4671FF;
+                padding: 8px 12px;
+                border-radius: 4px;
+                transition: background-color 0.2s;
+              }
+              .nav-link:hover {
+                text-decoration: underline;
+              }
+            `}
+          </style>
+          <div style={styles.main}>
+            <div style={styles.nav}>
+              <Link to="/" className="nav-link">
+                POS
+              </Link>
+              <Link to="/products" className="nav-link">
+                Products
+              </Link>
+              <Link to="/sales" className="nav-link">
+                Sales
+              </Link>
+              <Link to="/discounts" className="nav-link">
+                Discounts
+              </Link>
+              <Link to="/settings" className="nav-link">
+                Settings
+              </Link>
+            </div>
 
-          <Routes>
-            <Route path="/" element={<POSSystem />} />
-            <Route path="/products" element={<ProductManagement />} />
-            <Route path="/sales" element={<SalesHistory />} />
-            <Route path="/discounts" element={<DiscountManagement />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<POSSystem />} />
+              <Route path="/products" element={<ProductManagement />} />
+              <Route path="/sales" element={<SalesHistory />} />
+              <Route path="/discounts" element={<DiscountManagement />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </div>
         </Router>
       </SalesProvider>
     </NotificationProvider>
@@ -45,184 +61,20 @@ function App() {
 }
 
 const styles = {
-  container: {
-    padding: '20px',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  scannerSection: {
-    marginBottom: '20px',
-    padding: '20px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '5px',
-  },
-  barcodeInput: {
+  main: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
     width: '100%',
-    padding: '12px',
-    fontSize: '18px',
-    border: '2px solid #007bff',
-    borderRadius: '4px',
-    textAlign: 'center',
-  },
-  mainContent: {
-    display: 'flex',
-    gap: '20px',
-  },
-  cartSection: {
-    flex: '1',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-  },
-  cartItems: {
-    marginBottom: '20px',
-  },
-  cartItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px',
-    borderBottom: '1px solid #eee',
-  },
-  total: {
-    textAlign: 'right',
-    paddingTop: '20px',
-    borderTop: '2px solid #eee',
-  },
-  button: {
-    padding: '8px 16px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  removeButton: {
-    padding: '4px 8px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  checkoutButton: {
-    padding: '12px 24px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  barcode: {
-    fontFamily: 'monospace',
-    backgroundColor: '#f8f9fa',
-    padding: '4px',
-    borderRadius: '4px',
-    margin: '5px 0',
-  },
-  loading: {
-    padding: '20px',
-    textAlign: 'center',
-    fontSize: '1.2em',
-  },
-  cartItemName: {
-    flex: '2',
-    textAlign: 'left',
-  },
-  cartItemQuantity: {
-    flex: '1',
-    textAlign: 'center',
-    backgroundColor: '#f8f9fa',
-    padding: '2px 8px',
-    borderRadius: '4px',
-    margin: '0 8px',
-  },
-  cartItemPrice: {
-    flex: '1',
-    textAlign: 'right',
-    marginRight: '8px',
-  },
-  cartButtons: {
-    display: 'flex',
-    gap: '10px',
-    justifyContent: 'flex-end',
-    marginTop: '10px',
-  },
-  clearButton: {
-    padding: '12px 24px',
-    backgroundColor: '#6c757d',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
   },
   nav: {
+    position: 'sticky',
+    top: 0,
     display: 'flex',
     padding: '10px',
     backgroundColor: '#f8f9fa',
     borderBottom: '1px solid #dee2e6',
     gap: '15px',
-  },
-  navLink: {
-    textDecoration: 'none',
-    color: '#007bff',
-    padding: '8px 12px',
-    borderRadius: '4px',
-    '&:hover': {
-      backgroundColor: '#e9ecef',
-    },
-  },
-  quantityInput: {
-    width: '80px',
-    padding: '4px',
-    fontSize: '16px',
-  },
-  checkoutFields: {
-    marginTop: '10px',
-    marginBottom: '15px',
-    textAlign: 'left',
-  },
-  invoiceField: {
-    marginBottom: '10px',
-  },
-  checkbox: {
-    marginRight: '8px',
-  },
-  notesField: {
-    width: '100%',
-    minHeight: '60px',
-    padding: '8px',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
-    resize: 'vertical',
-  },
-  searchContainer: {
-    flex: '1',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-  },
-  holdButton: {
-    padding: '12px 24px',
-    backgroundColor: '#ffc107',
-    color: '#000',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  editableField: {
-    cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    '&:hover': {
-      backgroundColor: '#f0f0f0',
-    },
-  },
-  cartTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
   },
 };
 

@@ -305,97 +305,106 @@ function POSSystem() {
             </button>
           </div>
         )}
-        <BarcodeScanner
-          onProductScanned={addProductToCart}
-          onSpecialBarcode={handleSpecialBarcode}
-          isSuspendedBarcodeInput={isSuspendedBarcodeInput}
+        <div style={styles.barcodeSection}>
+          <div style={styles.productSearch}>
+            <ProductSearch
+              onProductSelect={addProductToCart}
+              onFocus={() => {
+                if (suspendTimeoutRef.current) {
+                  clearTimeout(suspendTimeoutRef.current);
+                }
+                setIsSuspendedBarcodeInput(true);
+              }}
+              onBlur={() => {
+                if (suspendTimeoutRef.current) {
+                  clearTimeout(suspendTimeoutRef.current);
+                }
+                setIsSuspendedBarcodeInput(false);
+              }}
+            />
+          </div>
+          <div style={styles.barcodeScanner}>
+            <BarcodeScanner
+              onProductScanned={addProductToCart}
+              onSpecialBarcode={handleSpecialBarcode}
+              isSuspendedBarcodeInput={isSuspendedBarcodeInput}
+              suspendTimeoutRef={suspendTimeoutRef}
+              handleApplyDiscount={handleApplyDiscount}
+            />
+          </div>
+        </div>
+
+        <h2>Current Cart: {currentSaleId}</h2>
+        <CartTable
+          cart={cart}
+          setCart={setCart}
+          setTotal={setTotal}
+          calculateTotal={calculateTotal}
+          appliedDiscounts={appliedDiscounts}
+          onRemoveItem={removeFromCart}
           suspendTimeoutRef={suspendTimeoutRef}
-          handleApplyDiscount={handleApplyDiscount}
+          setIsSuspendedBarcodeInput={setIsSuspendedBarcodeInput}
         />
-        <ProductSearch
-          onProductSelect={addProductToCart}
-          onFocus={() => {
-            if (suspendTimeoutRef.current) {
-              clearTimeout(suspendTimeoutRef.current);
-            }
-            setIsSuspendedBarcodeInput(true);
-          }}
-          onBlur={() => {
-            if (suspendTimeoutRef.current) {
-              clearTimeout(suspendTimeoutRef.current);
-            }
-            setIsSuspendedBarcodeInput(false);
-          }}
-        />
+        <TotalsPanel total={total} appliedDiscounts={appliedDiscounts} />
       </div>
       <div style={styles.rightPanel}>
         {isReturn && <div style={styles.returnWarning}>Return Mode Active</div>}
-        <div style={styles.cartContainer}>
-          <div style={styles.cartSection}>
-            <h2>Current Cart: {currentSaleId}</h2>
-            <CartTable
-              cart={cart}
-              setCart={setCart}
-              setTotal={setTotal}
-              calculateTotal={calculateTotal}
-              appliedDiscounts={appliedDiscounts}
-              onRemoveItem={removeFromCart}
-              suspendTimeoutRef={suspendTimeoutRef}
-              setIsSuspendedBarcodeInput={setIsSuspendedBarcodeInput}
-            />
-            {activeDiscounts.length > 0 && (
-              <DiscountsPanel
-                activeDiscounts={activeDiscounts}
-                appliedDiscounts={appliedDiscounts}
-                onApplyDiscount={handleApplyDiscount}
+
+        {activeDiscounts.length > 0 && (
+          <DiscountsPanel
+            activeDiscounts={activeDiscounts}
+            appliedDiscounts={appliedDiscounts}
+            onApplyDiscount={handleApplyDiscount}
+          />
+        )}
+
+        <div style={styles.checkoutFields}>
+          <div style={styles.invoiceField}>
+            <label>
+              <input
+                type="checkbox"
+                checked={needsInvoice}
+                onChange={(e) => setNeedsInvoice(e.target.checked)}
+                style={styles.checkbox}
               />
-            )}
-            <TotalsPanel total={total} appliedDiscounts={appliedDiscounts} />
-            <div style={styles.checkoutFields}>
-              <div style={styles.invoiceField}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={needsInvoice}
-                    onChange={(e) => setNeedsInvoice(e.target.checked)}
-                    style={styles.checkbox}
-                  />
-                  Invoice needed
-                </label>
-              </div>
-              {settings?.enable_email === 'true' && (
-                <div style={styles.emailField}>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={handleNotesFieldFocus}
-                    onBlur={handleNotesFieldBlur}
-                    placeholder="Email for receipt (optional)"
-                    style={styles.emailInput}
-                  />
-                </div>
-              )}
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+              Invoice needed
+            </label>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            onFocus={handleNotesFieldFocus}
+            onBlur={handleNotesFieldBlur}
+            placeholder="Add notes..."
+            style={styles.notesField}
+          />
+          {settings?.enable_email === 'true' && (
+            <div style={styles.emailField}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 onFocus={handleNotesFieldFocus}
                 onBlur={handleNotesFieldBlur}
-                placeholder="Add notes..."
-                style={styles.notesField}
+                placeholder="Email for receipt (optional)"
+                style={styles.emailInput}
               />
             </div>
-            <div style={styles.cartButtons}>
-              <button onClick={openHoldModal} style={styles.holdButton} disabled={cart.length === 0}>
-                Put on Hold
-              </button>
-              <button onClick={clearCart} style={styles.clearButton} disabled={cart.length === 0}>
-                Clear Cart
-              </button>
-              <button onClick={handleCheckout} style={styles.checkoutButton} disabled={cart.length === 0}>
-                Checkout
-              </button>
-            </div>
+          )}
+        </div>
+        <div style={styles.cartButtons}>
+          <div style={styles.cartButtonsLeft}>
+            <button onClick={clearCart} style={styles.clearButton} disabled={cart.length === 0}>
+              Clear Cart
+            </button>
+            <button onClick={openHoldModal} style={styles.holdButton} disabled={cart.length === 0}>
+              Put on Hold
+            </button>
+          </div>
+          <div style={styles.cartButtonsRight}>
+            <button onClick={handleCheckout} style={styles.checkoutButton} disabled={cart.length === 0}>
+              Checkout
+            </button>
           </div>
         </div>
       </div>
@@ -415,56 +424,40 @@ function POSSystem() {
 const styles = {
   container: {
     padding: '20px',
-    maxWidth: '1200px',
+    width: '100%',
+    minHeight: '100%',
+    maxWidth: '1800px',
     margin: '0 auto',
     display: 'flex',
+    justifyContent: 'space-between',
     gap: '20px',
   },
   leftPanel: {
     flex: '1',
+    height: 'min-content',
     padding: '20px',
+    minWidth: '800px',
     backgroundColor: 'white',
     borderRadius: '5px',
     borderColor: '#ddd',
     borderStyle: 'solid',
     borderWidth: '1px',
   },
-  barcodeSection: {
-    marginBottom: '20px',
-    padding: '20px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '5px',
-  },
-  barcodeInput: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '18px',
-    border: '2px solid #007bff',
-    borderRadius: '4px',
-    textAlign: 'center',
-  },
   rightPanel: {
-    flex: '1',
+    minWidth: '400px',
+    maxWidth: '600px',
+    maxHeight: 'min(calc(100vh - 120px), 800px)',
     padding: '20px',
     backgroundColor: 'white',
     borderRadius: '5px',
     border: '1px solid #ddd',
-  },
-  cartContainer: {
-    marginBottom: '20px',
-  },
-  cartSection: {
-    marginBottom: '20px',
-  },
-  cartItems: {
-    marginBottom: '20px',
-  },
-  cartItem: {
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px',
-    borderBottom: '1px solid #eee',
+  },
+  barcodeSection: {
+    display: 'flex',
+    gap: '20px',
   },
   total: {
     textAlign: 'right',
@@ -527,9 +520,13 @@ const styles = {
   cartButtons: {
     display: 'flex',
     gap: '10px',
-    justifyContent: 'flex-end',
-    marginTop: '10px',
+    justifyContent: 'space-between',
   },
+  cartButtonsLeft: {
+    display: 'flex',
+    gap: '10px',
+  },
+  cartButtonsRight: {},
   clearButton: {
     padding: '12px 24px',
     backgroundColor: '#6c757d',
@@ -537,22 +534,6 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-  },
-  nav: {
-    backgroundColor: '#f8f9fa',
-    padding: '10px 20px',
-    marginBottom: '20px',
-  },
-  navLink: {
-    marginRight: '20px',
-    textDecoration: 'none',
-    color: '#007bff',
-    fontWeight: 'bold',
-  },
-  quantityInput: {
-    width: '80px',
-    padding: '4px',
-    fontSize: '16px',
   },
   checkoutFields: {
     marginTop: '10px',
@@ -573,13 +554,6 @@ const styles = {
     border: '1px solid #ddd',
     resize: 'vertical',
   },
-  searchContainer: {
-    flex: '1',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-  },
   holdButton: {
     padding: '12px 24px',
     backgroundColor: '#ffc107',
@@ -587,18 +561,6 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-  },
-  editableField: {
-    cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    '&:hover': {
-      backgroundColor: '#f0f0f0',
-    },
-  },
-  cartTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
   },
   returnToggle: {
     marginBottom: '20px',
@@ -630,6 +592,7 @@ const styles = {
   },
   emailField: {
     marginBottom: '10px',
+    marginTop: '40px',
   },
   emailInput: {
     width: '100%',
@@ -639,86 +602,11 @@ const styles = {
     borderStyle: 'solid',
     borderRadius: '4px',
   },
-  discountsSection: {
-    marginBottom: '20px',
-    padding: '15px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
+  productSearch: {
+    flex: '1',
   },
-  discountsTitle: {
-    margin: '0 0 10px 0',
-    fontSize: '16px',
-    color: '#495057',
-  },
-  discountsList: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-  },
-  discountButton: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '8px 12px',
-    backgroundColor: 'white',
-    borderColor: '#ddd',
-    borderStyle: 'solid',
-    borderWidth: '1px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    minWidth: '120px',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#e9ecef',
-      borderColor: '#adb5bd',
-    },
-  },
-  discountButtonActive: {
-    backgroundColor: '#007bff',
-    borderColor: '#0056b3',
-  },
-  discountName: {
-    fontWeight: 'bold',
-    marginBottom: '4px',
-  },
-  discountValue: {
-    color: '#28a745',
-    fontSize: '14px',
-  },
-  totalsBreakdown: {
-    marginTop: '20px',
-    padding: '15px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
-  },
-  totalRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: '8px',
-    fontSize: '16px',
-  },
-  totalRowFinal: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '12px',
-    paddingTop: '12px',
-    borderTop: '2px solid #dee2e6',
-    fontSize: '18px',
-    fontWeight: 'bold',
-  },
-  discountAmount: {
-    color: '#dc3545',
-  },
-  discountCell: {
-    color: '#dc3545',
-    backgroundColor: '#f8d7da',
-    padding: '2px 6px',
-    borderRadius: '4px',
-    fontSize: '0.9em',
-  },
-  discountedPrice: {
-    color: '#28a745',
-    fontWeight: 'bold',
+  barcodeScanner: {
+    flex: '1',
   },
 };
 

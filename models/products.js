@@ -41,7 +41,7 @@ class ProductsRepository {
   getByBarcode(barcode) {
     const product = this.db.prepare('SELECT * FROM products WHERE barcode = ? AND archived_at IS NULL').get(barcode);
     if (!product) {
-      throw new Error('Product not found');
+      // throw new Error('Product not found');
     }
     return product;
   }

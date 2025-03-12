@@ -68,7 +68,7 @@ function BarcodeScanner({
       suspendTimeoutRef.current = setTimeout(() => {
         barcodeInputRef.current?.focus();
         suspendTimeoutRef.current = null;
-      }, 100);
+      }, 10);
     }
   };
 
@@ -112,6 +112,25 @@ function BarcodeScanner({
 
   return (
     <div style={styles.barcodeSection}>
+      <style>
+        {`
+          .barcode-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-width: 1px;
+            border-color: #ddd;
+            border-style: solid;
+            border-radius: 4px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+          }
+          .barcode-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+          }
+        `}
+      </style>
       <form onSubmit={handleBarcodeSubmit}>
         <input
           ref={barcodeInputRef}
@@ -119,7 +138,7 @@ function BarcodeScanner({
           value={barcodeInput}
           onChange={handleBarcodeChange}
           onBlur={handleBarcodeBlur}
-          style={styles.barcodeInput}
+          className="barcode-input"
           placeholder="Scan barcode..."
         />
       </form>
@@ -130,20 +149,6 @@ function BarcodeScanner({
 const styles = {
   barcodeSection: {
     marginBottom: '20px',
-  },
-  barcodeInput: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '16px',
-    borderWidth: '1px',
-    borderColor: '#ddd',
-    borderStyle: 'solid',
-    borderRadius: '4px',
-    '&:focus': {
-      outline: 'none',
-      borderColor: '#007bff',
-      boxShadow: '0 0 0 0.2rem rgba(0,123,255,.25)',
-    },
   },
 };
 

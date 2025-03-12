@@ -57,10 +57,6 @@ const styles = {
     cursor: 'pointer',
     minWidth: '120px',
     transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#e9ecef',
-      borderColor: '#adb5bd',
-    },
   },
   discountButtonActive: {
     backgroundColor: '#007bff',
@@ -71,10 +67,7 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: '4px',
   },
-  discountValue: {
-    color: '#28a745',
-    fontSize: '14px',
-  },
+  discountValue: {},
 };
 
 export default DiscountsPanel;

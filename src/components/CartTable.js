@@ -223,7 +223,7 @@ function CartTable({
                     €{finalItemTotal.toFixed(2)}
                   </span>
                 </td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   <button onClick={() => onRemoveItem(index)} style={styles.removeButton}>
                     ×
                   </button>
@@ -265,12 +265,13 @@ const styles = {
     },
   },
   removeButton: {
-    padding: '4px 8px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    border: 'none',
+    padding: '0 4px',
+    backgroundColor: 'white',
+    color: '#dc3545',
+    border: '1px solid #dc3545',
     borderRadius: '4px',
     cursor: 'pointer',
+    fontSize: '1.2em',
   },
   discountCell: {
     color: '#dc3545',
