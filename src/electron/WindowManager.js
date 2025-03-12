@@ -9,9 +9,9 @@ class WindowManager {
   static async createMainWindow(isDev) {
     const config = getConfig(isDev);
     WindowManager.mainWindow = new BrowserWindow({
-      width: 1200,
-      autoHideMenuBar: true,
+      width: 1280,
       height: 800,
+      autoHideMenuBar: true,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
