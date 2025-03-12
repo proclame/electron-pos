@@ -10,6 +10,7 @@ function DiscountManagement() {
     min_cart_value: '0',
     active: true,
     barcode: '',
+    show_on_pos: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +46,7 @@ function DiscountManagement() {
         min_cart_value: '0',
         active: true,
         barcode: '',
+        show_on_pos: true,
       });
       setEditingId(null);
       loadDiscounts();
@@ -62,6 +64,7 @@ function DiscountManagement() {
       min_cart_value: discount.min_cart_value.toString(),
       active: discount.active,
       barcode: discount.barcode || '',
+      show_on_pos: discount.show_on_pos !== undefined ? discount.show_on_pos : true,
     });
     setEditingId(discount.id);
   };
@@ -128,7 +131,7 @@ function DiscountManagement() {
           />
         </div>
 
-        <div style={styles.formGroup}>
+        {/* <div style={styles.formGroup}>
           <span style={styles.label}></span>
           <label>
             <input
@@ -138,9 +141,9 @@ function DiscountManagement() {
             />
             Auto Activate
           </label>
-        </div>
+        </div> */}
 
-        <div style={styles.formGroup}>
+        {/* <div style={styles.formGroup}>
           <label style={styles.label}>Minimum Cart Value:</label>
           <input
             type="number"
@@ -148,7 +151,7 @@ function DiscountManagement() {
             value={newDiscount.min_cart_value}
             onChange={(e) => setNewDiscount({ ...newDiscount, min_cart_value: e.target.value })}
           />
-        </div>
+        </div> */}
 
         <div style={styles.formGroup}>
           <span style={styles.label}></span>
@@ -160,6 +163,19 @@ function DiscountManagement() {
             />
             Active
           </label>
+        </div>
+
+        <div style={styles.formGroup}>
+          <span style={styles.label}></span>
+          <label>
+            <input
+              type="checkbox"
+              checked={newDiscount.show_on_pos}
+              onChange={(e) => setNewDiscount({ ...newDiscount, show_on_pos: e.target.checked })}
+            />
+            Show Button in POS
+          </label>
+          <div style={styles.hint}>When enabled, this discount will appear as a button in the POS interface</div>
         </div>
 
         <div style={styles.formGroup}>
@@ -175,7 +191,11 @@ function DiscountManagement() {
               Generate
             </button>
           </div>
-          <div style={styles.hint}>Scanning this barcode in the POS will toggle this discount on/off</div>
+          <div style={styles.hint}>
+            Scanning this barcode in the POS will toggle this discount on/off
+            <br />
+            should start with DISC-
+          </div>
         </div>
 
         <button type="submit" style={styles.button}>
@@ -189,9 +209,8 @@ function DiscountManagement() {
             <th>Name</th>
             <th>Type</th>
             <th>Value</th>
-            <th>Auto Activate</th>
-            <th>Min Cart Value</th>
             <th>Active</th>
+            <th>Show in POS</th>
             <th>Barcode</th>
             <th>Actions</th>
           </tr>
@@ -202,9 +221,8 @@ function DiscountManagement() {
               <td>{discount.name}</td>
               <td>{discount.type}</td>
               <td>{discount.type === 'percentage' ? `${discount.value}%` : `€${discount.value.toFixed(2)}`}</td>
-              <td>{discount.auto_activate ? 'Yes' : 'No'}</td>
-              <td>€{discount.min_cart_value.toFixed(2)}</td>
               <td>{discount.active ? 'Yes' : 'No'}</td>
+              <td>{discount.show_on_pos ? 'Yes' : 'No'}</td>
               <td>{discount.barcode || '-'}</td>
               <td>
                 <button onClick={() => handleEdit(discount)} style={styles.actionButton}>

@@ -14,18 +14,18 @@ const discountsRepo = {
   },
 
   getByBarcode(barcode) {
-    return db.prepare('SELECT * FROM discounts WHERE barcode = ? AND barcode IS NOT NULL').get(barcode);
+    return db.prepare('SELECT * FROM discounts WHERE barcode = ? AND barcode IS NOT NULL AND active = 1').get(barcode);
   },
 
   create(discount) {
     const stmt = db.prepare(`
-      INSERT INTO discounts (name, type, value, auto_activate, min_cart_value, active, barcode)
-      VALUES (@name, @type, @value, @auto_activate, @min_cart_value, @active, @barcode)
+      INSERT INTO discounts (name, type, value, auto_activate, min_cart_value, active, barcode, show_on_pos)
+      VALUES (@name, @type, @value, @auto_activate, @min_cart_value, @active, @barcode, @show_on_pos)
     `);
 
     discount.auto_activate = discount.auto_activate ? 1 : 0;
     discount.active = discount.active ? 1 : 0;
-
+    discount.show_on_pos = discount.show_on_pos ? 1 : 0;
     const result = stmt.run(discount);
     return result.lastInsertRowid;
   },
@@ -39,13 +39,14 @@ const discountsRepo = {
           auto_activate = @auto_activate, 
           min_cart_value = @min_cart_value, 
           active = @active,
-          barcode = @barcode
+          barcode = @barcode,
+          show_on_pos = @show_on_pos
       WHERE id = @id
     `);
 
     discount.auto_activate = discount.auto_activate ? 1 : 0;
     discount.active = discount.active ? 1 : 0;
-
+    discount.show_on_pos = discount.show_on_pos ? 1 : 0;
     return stmt.run({ ...discount, id });
   },
 

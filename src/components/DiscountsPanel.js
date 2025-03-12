@@ -1,29 +1,34 @@
 import React from 'react';
 
 function DiscountsPanel({ activeDiscounts, appliedDiscounts, onApplyDiscount }) {
+  // Filter out discounts that should not be shown in POS
+  const visibleDiscounts = activeDiscounts.filter((discount) => discount.show_on_pos);
+
   return (
-    <div style={styles.discountsSection}>
-      <h4 style={styles.discountsTitle}>Available Discounts</h4>
-      <div style={styles.discountsList}>
-        {activeDiscounts.map((discount) => (
-          <button
-            key={discount.id}
-            style={{
-              ...styles.discountButton,
-              ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
-                (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
-                styles.discountButtonActive),
-            }}
-            onClick={() => onApplyDiscount(discount)}
-          >
-            <span style={styles.discountName}>{discount.name}</span>
-            <span style={styles.discountValue}>
-              {discount.type === 'percentage' ? `${discount.value}%` : `€${discount.value}`}
-            </span>
-          </button>
-        ))}
+    visibleDiscounts.length > 0 && (
+      <div style={styles.discountsSection}>
+        <h4 style={styles.discountsTitle}>Available Discounts</h4>
+        <div style={styles.discountsList}>
+          {visibleDiscounts.map((discount) => (
+            <button
+              key={discount.id}
+              style={{
+                ...styles.discountButton,
+                ...(((discount.type === 'percentage' && appliedDiscounts.percentage?.id === discount.id) ||
+                  (discount.type === 'fixed' && appliedDiscounts.fixed?.id === discount.id)) &&
+                  styles.discountButtonActive),
+              }}
+              onClick={() => onApplyDiscount(discount)}
+            >
+              <span style={styles.discountName}>{discount.name}</span>
+              <span style={styles.discountValue}>
+                {discount.type === 'percentage' ? `${discount.value}%` : `€${discount.value}`}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    )
   );
 }
 

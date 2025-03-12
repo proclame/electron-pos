@@ -88,9 +88,13 @@ function BarcodeScanner({
 
       // Check if it's a discount barcode
       if (barcodeInput.startsWith('DISC-')) {
-        const discount = await window.electronAPI.discounts.getByBarcode(barcodeInput);
+        const discount = await window.electronAPI.discounts.getByBarcode(barcodeInput.trim());
         if (discount) {
           handleApplyDiscount(discount);
+          setBarcodeInput('');
+          return;
+        } else {
+          showNotification('Discount not found!', 'error');
           setBarcodeInput('');
           return;
         }
@@ -98,10 +102,12 @@ function BarcodeScanner({
 
       try {
         const product = await window.electronAPI.products.getProductByBarcode(barcodeInput);
+        if (typeof product === 'undefined') {
+          throw new Error('Product not found');
+        }
         onProductScanned(product);
         playSuccessSound();
       } catch (err) {
-        console.error('Error finding product:', err);
         showNotification('Product not found!', 'error');
         playErrorSound();
       }

@@ -64,11 +64,13 @@ const styles = {
   main: {
     display: 'flex',
     flexDirection: 'column',
+    paddingTop: '60px',
     height: '100%',
     width: '100%',
   },
   nav: {
-    position: 'sticky',
+    position: 'fixed',
+    width: '100%',
     top: 0,
     display: 'flex',
     padding: '10px',
