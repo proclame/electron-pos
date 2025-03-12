@@ -13,10 +13,14 @@ const discountsRepo = {
     return db.prepare('SELECT * FROM discounts WHERE id = ?').get(id);
   },
 
+  getByBarcode(barcode) {
+    return db.prepare('SELECT * FROM discounts WHERE barcode = ? AND barcode IS NOT NULL').get(barcode);
+  },
+
   create(discount) {
     const stmt = db.prepare(`
-      INSERT INTO discounts (name, type, value, auto_activate, min_cart_value, active)
-      VALUES (@name, @type, @value, @auto_activate, @min_cart_value, @active)
+      INSERT INTO discounts (name, type, value, auto_activate, min_cart_value, active, barcode)
+      VALUES (@name, @type, @value, @auto_activate, @min_cart_value, @active, @barcode)
     `);
 
     discount.auto_activate = discount.auto_activate ? 1 : 0;
@@ -34,7 +38,8 @@ const discountsRepo = {
           value = @value, 
           auto_activate = @auto_activate, 
           min_cart_value = @min_cart_value, 
-          active = @active
+          active = @active,
+          barcode = @barcode
       WHERE id = @id
     `);
 

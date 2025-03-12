@@ -45,5 +45,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateDiscount: (id, discount) => ipcRenderer.invoke('discounts:update-discount', { id, discount }),
     deleteDiscount: (id) => ipcRenderer.invoke('discounts:delete-discount', id),
     getApplicable: (cartTotal) => ipcRenderer.invoke('discounts:get-applicable', cartTotal),
+    getByBarcode: (barcode) => ipcRenderer.invoke('discounts:get-by-barcode', barcode),
   },
 });

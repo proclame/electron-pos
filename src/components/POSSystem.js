@@ -261,13 +261,13 @@ function POSSystem() {
     const newDiscounts = { ...appliedDiscounts };
 
     if (discount.type === 'percentage') {
-      if (newDiscounts.percentage === discount) {
+      if (newDiscounts.percentage?.id === discount.id) {
         newDiscounts.percentage = null;
       } else {
         newDiscounts.percentage = discount;
       }
     } else {
-      if (newDiscounts.fixed === discount) {
+      if (newDiscounts.fixed?.id === discount.id) {
         newDiscounts.fixed = null;
       } else {
         newDiscounts.fixed = discount;
@@ -310,6 +310,7 @@ function POSSystem() {
           onSpecialBarcode={handleSpecialBarcode}
           isSuspendedBarcodeInput={isSuspendedBarcodeInput}
           suspendTimeoutRef={suspendTimeoutRef}
+          handleApplyDiscount={handleApplyDiscount}
         />
         <ProductSearch
           onProductSelect={addProductToCart}

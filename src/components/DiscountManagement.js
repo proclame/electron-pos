@@ -9,6 +9,7 @@ function DiscountManagement() {
     auto_activate: false,
     min_cart_value: '0',
     active: true,
+    barcode: '',
   });
   const [editingId, setEditingId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +44,7 @@ function DiscountManagement() {
         auto_activate: false,
         min_cart_value: '0',
         active: true,
+        barcode: '',
       });
       setEditingId(null);
       loadDiscounts();
@@ -59,6 +61,7 @@ function DiscountManagement() {
       auto_activate: discount.auto_activate,
       min_cart_value: discount.min_cart_value.toString(),
       active: discount.active,
+      barcode: discount.barcode || '',
     });
     setEditingId(discount.id);
   };
@@ -72,6 +75,12 @@ function DiscountManagement() {
         console.error('Error deleting discount:', error);
       }
     }
+  };
+
+  const generateRandomBarcode = () => {
+    // Generate a random barcode with prefix "DISC-" followed by 8 digits
+    const randomNum = Math.floor(10000000 + Math.random() * 90000000);
+    setNewDiscount({ ...newDiscount, barcode: `DISC-${randomNum}` });
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -142,6 +151,22 @@ function DiscountManagement() {
           </label>
         </div>
 
+        <div style={styles.formGroup}>
+          <label>Barcode (for quick toggle):</label>
+          <div style={styles.barcodeInputGroup}>
+            <input
+              type="text"
+              value={newDiscount.barcode}
+              onChange={(e) => setNewDiscount({ ...newDiscount, barcode: e.target.value })}
+              placeholder="Optional barcode to toggle discount"
+            />
+            <button type="button" onClick={generateRandomBarcode} style={styles.generateButton}>
+              Generate
+            </button>
+          </div>
+          <div style={styles.hint}>Scanning this barcode in the POS will toggle this discount on/off</div>
+        </div>
+
         <button type="submit" style={styles.button}>
           {editingId ? 'Update Discount' : 'Add Discount'}
         </button>
@@ -156,6 +181,7 @@ function DiscountManagement() {
             <th>Auto Activate</th>
             <th>Min Cart Value</th>
             <th>Active</th>
+            <th>Barcode</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -168,6 +194,7 @@ function DiscountManagement() {
               <td>{discount.auto_activate ? 'Yes' : 'No'}</td>
               <td>€{discount.min_cart_value.toFixed(2)}</td>
               <td>{discount.active ? 'Yes' : 'No'}</td>
+              <td>{discount.barcode || '-'}</td>
               <td>
                 <button onClick={() => handleEdit(discount)} style={styles.actionButton}>
                   Edit
@@ -223,6 +250,23 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+  },
+  barcodeInputGroup: {
+    display: 'flex',
+    gap: '10px',
+  },
+  generateButton: {
+    padding: '4px 8px',
+    backgroundColor: '#6c757d',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  hint: {
+    fontSize: '12px',
+    color: '#6c757d',
+    marginTop: '5px',
   },
 };
 

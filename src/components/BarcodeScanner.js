@@ -1,10 +1,16 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SPECIAL_BARCODES } from '../constants/barcodes';
 import { useNotification } from '../contexts/NotificationContext';
 
-function BarcodeScanner({ onProductScanned, onSpecialBarcode, isSuspendedBarcodeInput, suspendTimeoutRef }) {
+function BarcodeScanner({
+  onProductScanned,
+  onSpecialBarcode,
+  isSuspendedBarcodeInput,
+  suspendTimeoutRef,
+  handleApplyDiscount,
+}) {
   const { showNotification } = useNotification();
-  const [barcodeInput, setBarcodeInput] = React.useState('');
+  const [barcodeInput, setBarcodeInput] = useState('');
   const barcodeInputRef = useRef(null);
 
   useEffect(() => {
@@ -38,6 +44,16 @@ function BarcodeScanner({ onProductScanned, onSpecialBarcode, isSuspendedBarcode
         setBarcodeInput('');
         barcodeInputRef.current?.focus();
         return;
+      }
+
+      // Check if it's a discount barcode
+      if (barcodeInput.startsWith('DISC-')) {
+        const discount = await window.electronAPI.discounts.getByBarcode(barcodeInput);
+        if (discount) {
+          handleApplyDiscount(discount);
+          setBarcodeInput('');
+          return;
+        }
       }
 
       try {

@@ -58,6 +58,15 @@ function registerDiscountHandlers() {
       throw error;
     }
   });
+
+  ipcMain.handle('discounts:get-by-barcode', async (event, barcode) => {
+    try {
+      return discountsRepo.getByBarcode(barcode);
+    } catch (error) {
+      console.error('Error getting discount by barcode:', error);
+      throw error;
+    }
+  });
 }
 
 module.exports = registerDiscountHandlers;
