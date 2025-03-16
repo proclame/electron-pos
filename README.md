@@ -39,9 +39,9 @@ A modern, desktop point-of-sale application built with Electron and React. This 
    npm install
    ```
 
-3. Start the application:
+3. Start the application (dev):
    ```
-   npm start
+   npm electron-dev
    ```
 
 ## Usage
@@ -107,10 +107,10 @@ The application uses SQLite for local data storage. Database migrations handle s
 ### Building for Production
 
 ```
-npm run make
+npm run release
 ```
 
-This will create distributables for your platform in the `/out` directory.
+This will create distributables for your platform in the `/dist` directory.
 
 ## License
 
