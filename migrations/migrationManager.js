@@ -10,6 +10,7 @@ const addArchivedAtToProducts = require('./009_add_archived_at_to_products');
 const addBarcodeToDiscounts = require('./010_add_barcode_to_discounts');
 const addBarcodeSoundSetting = require('./011_add_barcode_sound_setting');
 const addShowOnPosToDiscounts = require('./012_add_show_on_pos_to_discounts');
+const addPrinterScaleSetting = require('./013_add_printer_scale_setting');
 
 const migrations = [
   createProductsTable,
@@ -24,6 +25,7 @@ const migrations = [
   addBarcodeToDiscounts,
   addBarcodeSoundSetting,
   addShowOnPosToDiscounts,
+  addPrinterScaleSetting,
 ];
 
 async function runMigrations(db) {

@@ -22,9 +22,9 @@ function Settings() {
     smtp_user: '',
     smtp_pass: '',
     smtp_from: '',
+    printer_scale_factor: '250',
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState('');
   const [printers, setPrinters] = useState([]);
   const [isPrinting, setIsPrinting] = useState(false);
 
@@ -46,7 +46,7 @@ function Settings() {
       setSettings(data);
     } catch (error) {
       console.error('Error fetching settings:', error);
-      setMessage('Error loading settings');
+      showNotification('Error loading settings', 'error');
     }
   };
 
@@ -56,20 +56,20 @@ function Settings() {
       setPrinters(data);
     } catch (error) {
       console.error('Error fetching printers:', error);
+      showNotification('Error fetching printers', 'error');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    setMessage('');
 
     try {
       await window.electronAPI.settings.saveSettings(settings);
-      setMessage('Settings saved successfully');
+      showNotification('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      setMessage('Error saving settings');
+      showNotification('Error saving settings', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -266,20 +266,37 @@ function Settings() {
             </label>
           </div>
           {settings.use_printer === 'true' && (
-            <div style={styles.formGroup}>
-              <label>Select Printer:</label>
-              <select
-                value={settings.selected_printer}
-                onChange={(e) => handleChange('selected_printer', e.target.value)}
-                style={styles.select}
-              >
-                <option value="">Select a printer...</option>
-                {printers.map((printer) => (
-                  <option key={printer.name} value={printer.name}>
-                    {printer.name}
-                  </option>
-                ))}
-              </select>
+            <>
+              <div style={styles.formGroup}>
+                <label>Select Printer:</label>
+                <select
+                  value={settings.selected_printer}
+                  onChange={(e) => handleChange('selected_printer', e.target.value)}
+                  style={styles.select}
+                >
+                  <option value="">Select a printer...</option>
+                  {printers.map((printer) => (
+                    <option key={printer.name} value={printer.name}>
+                      {printer.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={styles.formGroup}>
+                <label>Printer Scale Factor: (save before testing)</label>
+                <input
+                  type="number"
+                  value={settings.printer_scale_factor}
+                  onChange={(e) => handleChange('printer_scale_factor', e.target.value)}
+                  style={styles.input}
+                  min="1"
+                  max="1000"
+                  step="1"
+                />
+                <div style={styles.hint}>
+                  Adjust this value if your receipt printouts are too large or small (default: 250)
+                </div>
+              </div>
               <button
                 onClick={handleTestPrint}
                 disabled={!settings.selected_printer || isPrinting}
@@ -287,7 +304,7 @@ function Settings() {
               >
                 {isPrinting ? 'Printing...' : 'Print Test Receipt'}
               </button>
-            </div>
+            </>
           )}
         </div>
 
@@ -390,8 +407,6 @@ function Settings() {
           )}
         </div>
 
-        {message && <div style={styles.message}>{message}</div>}
-
         <div style={styles.buttonContainer}>
           <button type="submit" style={styles.button} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save Settings'}
@@ -414,6 +429,7 @@ const styles = {
     gap: '20px',
   },
   formGroup: {
+    marginTop: '20px',
     display: 'flex',
     flexDirection: 'column',
     gap: '5px',
@@ -439,12 +455,6 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '16px',
-  },
-  message: {
-    padding: '10px',
-    borderRadius: '4px',
-    backgroundColor: '#f8f9fa',
-    textAlign: 'center',
   },
   logoContainer: {
     marginTop: '10px',
@@ -513,6 +523,12 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'not-allowed',
+  },
+  hint: {
+    fontSize: '12px',
+    color: '#666',
+    marginTop: '4px',
+    marginLeft: '24px',
   },
 };
 

@@ -1,7 +1,7 @@
 const os = require('os');
 const { BrowserWindow } = require('electron');
-const { db } = require('../models/database');
 const receiptTemplateService = require('./ReceiptTemplateService');
+const { settingsRepo } = require('../models/database');
 
 class PrinterService {
   constructor() {
@@ -17,14 +17,7 @@ class PrinterService {
   }
 
   async getSettings() {
-    if (!this.settings) {
-      const settings = db.prepare('SELECT key, value FROM settings').all();
-      this.settings = settings.reduce((obj, item) => {
-        obj[item.key] = item.value;
-        return obj;
-      }, {});
-    }
-    return this.settings;
+    this.settings = settingsRepo.getAll();
   }
 
   async printReceipt(sale, printerName = null) {
@@ -51,13 +44,13 @@ class PrinterService {
 
       const html = receiptTemplateService.generateReceiptHTML(sale, this.settings);
       await theWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-
+      console.log('scaleFactor', this.settings.printer_scale_factor);
       const result = theWindow.webContents.print(
         {
           silent: true,
           printBackground: true,
           // scaleFactor: 100,
-          scaleFactor: 250,
+          scaleFactor: Number(this.settings.printer_scale_factor),
           deviceName: this.printerName,
           color: false,
           margins: { marginType: 'custom', top: 0, bottom: 0, left: 0, right: 0 },

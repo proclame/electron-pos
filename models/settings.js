@@ -1,10 +1,15 @@
 class SettingsRepository {
   constructor(db) {
     this.db = db;
+    this.settings = null;
   }
 
   getAll() {
-    return this.db
+    if (this.settings) {
+      return this.settings;
+    }
+
+    this.settings = this.db
       .prepare('SELECT key, value FROM settings')
       .all()
       .reduce(
@@ -14,6 +19,8 @@ class SettingsRepository {
         }),
         {},
       );
+
+    return this.settings;
   }
 
   update(settings) {
@@ -27,6 +34,7 @@ class SettingsRepository {
       Object.entries(settings).forEach(([key, value]) => {
         stmt.run(value.toString(), key);
       });
+      this.settings = null;
       return { ok: true };
     });
   }
