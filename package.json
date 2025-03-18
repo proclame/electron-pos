@@ -1,7 +1,7 @@
 {
   "name": "electron-pos",
   "productName": "Zumba Wear POS",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "public/electron.js",
   "homepage": "./",
   "description": "A simple POS system built with Electron and React",
