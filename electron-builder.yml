@@ -1,0 +1,19 @@
+appId: 'com.proclame.pos'
+
+name: 'Proclame POS'
+
+files:
+  - '**/*'
+  - '!node_modules'
+
+win:
+  azureSignOptions:
+    publisherName: 'Odin Europe BV'
+    endpoint: 'https://weu.codesigning.azure.net'
+    certificateProfileName: 'Electron-POS'
+    codeSigningAccountName: 'Electron-POS'
+
+env:
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
