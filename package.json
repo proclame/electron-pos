@@ -3,11 +3,14 @@
   "productName": "Zumba Wear POS",
   "version": "0.0.1",
   "main": "public/electron.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proclame/electron-pos.git"
+  },
   "homepage": "./",
   "description": "A simple POS system built with Electron and React",
   "author": "Nick Mispoulier <nick.mispoulier@zumbawear.eu>",
   "license": "UNLICENSED",
-  "repository": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

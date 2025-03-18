@@ -112,6 +112,12 @@ npm run release
 
 This will create distributables for your platform in the `/dist` directory.
 
+### Signing & Notarizing:
+
+WIP:
+
+- Used this link to setup azure: https://melatonin.dev/blog/code-signing-on-windows-with-azure-trusted-signing/
+
 ## License
 
 [MIT License](LICENSE)
