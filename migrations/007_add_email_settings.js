@@ -1,5 +1,6 @@
 const addEmailSettings = `
   INSERT OR IGNORE INTO settings (key, value) VALUES 
+    ('enable_email', 'false'),
     ('smtp_host', ''),
     ('smtp_port', '587'),
     ('smtp_secure', 'false'),
