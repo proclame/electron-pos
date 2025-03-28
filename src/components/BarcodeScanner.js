@@ -79,7 +79,10 @@ function BarcodeScanner({
   const handleBarcodeSubmit = async (e) => {
     e.preventDefault();
     if (barcodeInput.trim()) {
-      if (barcodeInput === SPECIAL_BARCODES.CHECKOUT) {
+      // Replace § with - in the barcode input
+      const normalizedBarcode = barcodeInput.replace(/§/g, '-');
+
+      if (normalizedBarcode === SPECIAL_BARCODES.CHECKOUT) {
         onSpecialBarcode('checkout');
         setBarcodeInput('');
         barcodeInputRef.current?.focus();
@@ -87,8 +90,8 @@ function BarcodeScanner({
       }
 
       // Check if it's a discount barcode
-      if (barcodeInput.startsWith('DISC-')) {
-        const discount = await window.electronAPI.discounts.getByBarcode(barcodeInput.trim());
+      if (normalizedBarcode.startsWith('DISC-')) {
+        const discount = await window.electronAPI.discounts.getByBarcode(normalizedBarcode.trim());
         if (discount) {
           handleApplyDiscount(discount);
           setBarcodeInput('');
@@ -101,7 +104,7 @@ function BarcodeScanner({
       }
 
       try {
-        const product = await window.electronAPI.products.getProductByBarcode(barcodeInput);
+        const product = await window.electronAPI.products.getProductByBarcode(normalizedBarcode);
         if (typeof product === 'undefined') {
           throw new Error('Product not found');
         }
