@@ -1,7 +1,7 @@
 {
   "name": "electron-pos",
   "productName": "Zumba Wear POS",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "main": "public/electron.js",
   "repository": {
     "type": "git",
