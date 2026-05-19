@@ -23,6 +23,10 @@ function Settings() {
     smtp_pass: '',
     smtp_from: '',
     printer_scale_factor: '250',
+    receipt_margin_top: '0',
+    receipt_margin_right: '0',
+    receipt_margin_bottom: '0',
+    receipt_margin_left: '0',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [printers, setPrinters] = useState([]);
@@ -297,6 +301,30 @@ function Settings() {
                   Adjust this value if your receipt printouts are too large or small (default: 250)
                 </div>
               </div>
+              <div style={styles.formGroup}>
+                <label>Receipt Margins (mm): (save before testing)</label>
+                <div style={styles.marginGrid}>
+                  {['top', 'right', 'bottom', 'left'].map((side) => (
+                    <div key={side} style={styles.marginField}>
+                      <label htmlFor={`receipt_margin_${side}`} style={styles.marginLabel}>
+                        {side.charAt(0).toUpperCase() + side.slice(1)}
+                      </label>
+                      <input
+                        type="number"
+                        id={`receipt_margin_${side}`}
+                        value={settings[`receipt_margin_${side}`]}
+                        onChange={(e) => handleChange(`receipt_margin_${side}`, e.target.value)}
+                        style={styles.input}
+                        min="0"
+                        step="0.5"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div style={styles.hint}>
+                  Margins are entered in real millimeters and compensated for the scale factor above.
+                </div>
+              </div>
               <button
                 onClick={handleTestPrint}
                 disabled={!settings.selected_printer || isPrinting}
@@ -529,6 +557,20 @@ const styles = {
     color: '#666',
     marginTop: '4px',
     marginLeft: '24px',
+  },
+  marginGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '10px',
+  },
+  marginField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  marginLabel: {
+    fontSize: '14px',
+    color: '#666',
   },
 };
 

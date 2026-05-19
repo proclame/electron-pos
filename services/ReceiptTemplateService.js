@@ -1,14 +1,23 @@
 class ReceiptTemplateService {
   generateReceiptHTML(sale, settings) {
+    // The print pipeline scales the whole page by printer_scale_factor (a percentage).
+    // Dividing the requested margin by that factor makes it land at the intended
+    // physical size on paper regardless of the scale factor.
+    const scale = Number(settings.printer_scale_factor) || 100;
+    const compMm = (mm) => ((Number(mm) || 0) * 100) / scale;
+    const padding = `${compMm(settings.receipt_margin_top)}mm ${compMm(settings.receipt_margin_right)}mm ${compMm(settings.receipt_margin_bottom)}mm ${compMm(settings.receipt_margin_left)}mm`;
+
     return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <style>
+        @page { margin: 0; }
         body {
             font-family: Arial, sans-serif;
-            padding: 0;
+            padding: ${padding};
             margin: 0;
+            box-sizing: border-box;
             width: 100%;
             font-size: 12px;
         }
