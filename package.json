@@ -71,12 +71,7 @@
       }
     ],
     "win": {
-      "publisherName": "Odin Europe BV",
-      "azureSignOptions": {
-        "endpoint": "https://weu.codesigning.azure.net",
-        "certificateProfileName": "Electron-POS",
-        "codeSigningAccountName": "Electron-POS"
-      }
+      "publisherName": "Odin Europe BV"
     },
     "nsis": {
       "artifactName": "${name}-Setup-${version}.${ext}"
