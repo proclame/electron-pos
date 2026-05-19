@@ -61,6 +61,7 @@
   },
   "build": {
     "appId": "com.electron.pos",
+    "executableName": "ZumbaWearPOS",
     "publish": [
       {
         "provider": "github",
@@ -70,12 +71,15 @@
       }
     ],
     "win": {
+      "publisherName": "Odin Europe BV",
       "azureSignOptions": {
-        "publisherName": "Odin Europe BV",
         "endpoint": "https://weu.codesigning.azure.net",
         "certificateProfileName": "Electron-POS",
         "codeSigningAccountName": "Electron-POS"
       }
+    },
+    "nsis": {
+      "artifactName": "${name}-Setup-${version}.${ext}"
     },
     "files": [
       "build/**/*",
