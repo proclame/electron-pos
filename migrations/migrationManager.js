@@ -13,6 +13,7 @@ const addShowOnPosToDiscounts = require('./012_add_show_on_pos_to_discounts');
 const addPrinterScaleSetting = require('./013_add_printer_scale_setting');
 const addReceiptMarginSettings = require('./014_add_receipt_margin_settings');
 const addDiscountableToProducts = require('./015_add_discountable_to_products');
+const addReceiptNumber = require('./016_add_receipt_number');
 
 const migrations = [
   createProductsTable,
@@ -30,6 +31,7 @@ const migrations = [
   addPrinterScaleSetting,
   addReceiptMarginSettings,
   addDiscountableToProducts,
+  addReceiptNumber,
 ];
 
 async function runMigrations(db) {

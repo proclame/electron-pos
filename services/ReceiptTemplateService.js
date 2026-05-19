@@ -71,7 +71,7 @@ class ReceiptTemplateService {
         : ''
     }
     <div class="divider"></div>
-    <div>Receipt #: ${sale.id}</div>
+    <div>Receipt #: ${sale.receipt_number || sale.id}</div>
     <div>Date: ${new Date().toLocaleString('nl-NL')}</div>
     <div class="divider"></div>
     <table>

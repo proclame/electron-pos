@@ -154,7 +154,7 @@ function SalesHistory() {
           <tbody>
             {sales.map((sale) => (
               <tr key={sale.id}>
-                <td style={{ textAlign: 'center' }}>#{sale.id}</td>
+                <td style={{ textAlign: 'center' }}>{sale.receipt_number || `#${sale.id}`}</td>
                 <td>{formatDate(sale.created_at)}</td>
                 <td style={{ textAlign: 'center' }}>{sale.items.length}</td>
                 <td style={{ textAlign: 'right', paddingRight: '20px' }}>€{sale.total.toFixed(2)}</td>

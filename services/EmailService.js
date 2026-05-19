@@ -38,16 +38,17 @@ class EmailService {
 
     const receiptHtml = receiptTemplate.generateReceiptHTML(sale, this.settings);
     const pdfBuffer = await PDFService.generateReceiptBuffer(sale);
+    const receiptNo = sale.receipt_number || sale.id;
 
     const info = await this.transporter.sendMail({
       from: this.settings.smtp_from,
       to: emailAddress,
-      subject: `Receipt #${sale.id} from ${this.settings.company_name}`,
-      text: `Receipt #${sale.id} from ${this.settings.company_name}`,
+      subject: `Receipt #${receiptNo} from ${this.settings.company_name}`,
+      text: `Receipt #${receiptNo} from ${this.settings.company_name}`,
       html: receiptHtml,
       attachments: [
         {
-          filename: `receipt-${sale.id}.pdf`,
+          filename: `receipt-${receiptNo}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf',
         },

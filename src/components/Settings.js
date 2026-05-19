@@ -27,6 +27,8 @@ function Settings() {
     receipt_margin_right: '0',
     receipt_margin_bottom: '0',
     receipt_margin_left: '0',
+    receipt_prefix: '',
+    receipt_number_length: '5',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [printers, setPrinters] = useState([]);
@@ -431,6 +433,38 @@ function Settings() {
               Enable Barcode Scanner Sounds
             </label>
             <div style={styles.helpText}>Play sounds when products are scanned or errors occur</div>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label htmlFor="receipt_prefix">Receipt Number Prefix</label>
+            <input
+              type="text"
+              id="receipt_prefix"
+              name="receipt_prefix"
+              value={settings.receipt_prefix}
+              onChange={(e) => handleChange('receipt_prefix', e.target.value)}
+              style={styles.input}
+            />
+            <div style={styles.helpText}>
+              Prepended to every receipt number, e.g. &quot;INV-&quot;. Leave empty for none.
+            </div>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label htmlFor="receipt_number_length">Receipt Number Length</label>
+            <input
+              type="number"
+              id="receipt_number_length"
+              name="receipt_number_length"
+              value={settings.receipt_number_length}
+              onChange={(e) => handleChange('receipt_number_length', e.target.value)}
+              style={styles.input}
+              min="0"
+              step="1"
+            />
+            <div style={styles.helpText}>
+              Minimum number of digits, zero-padded (e.g. 5 shows sale 42 as 00042). Applies to new sales only.
+            </div>
           </div>
         </div>
 

@@ -1,3 +1,5 @@
+const { formatReceiptNumber } = require('./receiptNumber');
+
 class SalesRepository {
   constructor(db) {
     this.db = db;
@@ -167,7 +169,20 @@ class SalesRepository {
         );
       });
 
-      return { id: saleId };
+      const receiptSettings = this.db
+        .prepare("SELECT key, value FROM settings WHERE key IN ('receipt_prefix', 'receipt_number_length')")
+        .all()
+        .reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+
+      const receiptNumber = formatReceiptNumber(
+        saleId,
+        receiptSettings.receipt_prefix,
+        receiptSettings.receipt_number_length,
+      );
+
+      this.db.prepare('UPDATE sales SET receipt_number = ? WHERE id = ?').run(receiptNumber, saleId);
+
+      return { id: saleId, receipt_number: receiptNumber };
     });
 
     return { ok: true, ...result };

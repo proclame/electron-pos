@@ -85,6 +85,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
       setIsPrinting(true);
       const response = await window.electronAPI.print.printReceipt({
         id: sale.id,
+        receipt_number: sale.receipt_number,
         items: sale.items.map((item) => ({
           product: {
             id: item.product_id,
@@ -152,6 +153,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
       const response = await window.electronAPI.email.sendReceipt(
         {
           id: sale.id,
+          receipt_number: sale.receipt_number,
           items: sale.items.map((item) => ({
             product: {
               id: item.product_id,
@@ -192,7 +194,7 @@ function SaleDetailModal({ sale, isOpen, onClose }) {
     <div style={styles.modalOverlay} onClick={handleOverlayClick}>
       <div style={styles.modalContent}>
         <div style={styles.modalHeader}>
-          <h2>Sale Details #{sale.id}</h2>
+          <h2>Sale Details {sale.receipt_number || `#${sale.id}`}</h2>
           <button onClick={handleClose} style={styles.closeButton}>
             ×
           </button>

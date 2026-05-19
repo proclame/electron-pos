@@ -166,12 +166,12 @@ function POSSystem() {
       const response = await window.electronAPI.sales.createSale(saleData);
 
       if (response.ok) {
-        const { id } = response;
+        const { id, receipt_number } = response;
 
         try {
-          await window.electronAPI.print.printReceipt({ ...saleData, id });
+          await window.electronAPI.print.printReceipt({ ...saleData, id, receipt_number });
           if (email) {
-            await window.electronAPI.email.sendReceipt({ ...saleData, id }, email);
+            await window.electronAPI.email.sendReceipt({ ...saleData, id, receipt_number }, email);
           }
         } catch (printError) {
           console.error('Error printing receipt:', printError);
