@@ -47,4 +47,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getApplicable: (cartTotal) => ipcRenderer.invoke('discounts:get-applicable', cartTotal),
     getByBarcode: (barcode) => ipcRenderer.invoke('discounts:get-by-barcode', barcode),
   },
+  app: {
+    checkForUpdate: () => ipcRenderer.invoke('app:check-for-update'),
+    openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
+  },
 });

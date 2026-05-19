@@ -31,6 +31,8 @@ function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [versionInfo, setVersionInfo] = useState(null);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
   const handleChange = (key, value) => {
     setSettings((prev) => ({
@@ -147,6 +149,25 @@ function Settings() {
       showNotification(error.message || 'Failed to print test receipt', 'error');
     } finally {
       setIsPrinting(false);
+    }
+  };
+
+  const handleCheckForUpdate = async () => {
+    try {
+      setIsCheckingUpdate(true);
+      const info = await window.electronAPI.app.checkForUpdate();
+      setVersionInfo(info);
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+      showNotification('Could not check for updates', 'error');
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
+
+  const handleDownloadUpdate = () => {
+    if (versionInfo?.downloadUrl) {
+      window.electronAPI.app.openExternal(versionInfo.downloadUrl);
     }
   };
 
@@ -432,6 +453,34 @@ function Settings() {
                 />
               </div>
             </>
+          )}
+        </div>
+
+        <div style={styles.section}>
+          <h3>App Version</h3>
+          <button
+            type="button"
+            onClick={handleCheckForUpdate}
+            disabled={isCheckingUpdate}
+            style={isCheckingUpdate ? styles.testButtonDisabled : styles.testButton}
+          >
+            {isCheckingUpdate ? 'Checking...' : 'Check for Updates'}
+          </button>
+          {versionInfo && (
+            <div style={styles.formGroup}>
+              <div>Current version: {versionInfo.currentVersion}</div>
+              <div>Latest version: {versionInfo.latestVersion || 'unknown'}</div>
+              {versionInfo.updateAvailable ? (
+                <div>
+                  <span>A new version is available. </span>
+                  <button type="button" onClick={handleDownloadUpdate} style={styles.button}>
+                    Download {versionInfo.latestVersion}
+                  </button>
+                </div>
+              ) : (
+                <div>You are running the latest version.</div>
+              )}
+            </div>
           )}
         </div>
 

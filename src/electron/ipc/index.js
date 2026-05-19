@@ -5,6 +5,7 @@ const registerProductsHandlers = require('./products');
 const registerActiveSalesHandlers = require('./active-sales');
 const registerEmailHandlers = require('./email');
 const registerDiscountHandlers = require('./discounts');
+const registerAppHandlers = require('./app');
 
 function registerIpcHandlers() {
   registerSettingsHandlers();
@@ -14,6 +15,7 @@ function registerIpcHandlers() {
   registerActiveSalesHandlers();
   registerEmailHandlers();
   registerDiscountHandlers();
+  registerAppHandlers();
 }
 
 module.exports = registerIpcHandlers;
