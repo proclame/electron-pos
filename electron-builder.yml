@@ -10,6 +10,7 @@ publish:
   provider: github
   owner: proclame
   repo: electron-pos
+  releaseType: release
 
 win:
   azureSignOptions:
