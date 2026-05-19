@@ -63,7 +63,7 @@
     "files": [
       "build/**/*",
       "node_modules/**/*",
-      "pulbic/electron.js",
+      "public/electron.js",
       "src/electron/**/*",
       "src/config/**/*",
       "models/**/*",
