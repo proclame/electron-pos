@@ -1,3 +1,11 @@
+function nullableText(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const trimmed = String(value).trim();
+  return trimmed === '' ? null : trimmed;
+}
+
 function toDiscountableInt(value) {
   if (value === undefined || value === null) {
     return 1;
@@ -76,8 +84,8 @@ class ProductsRepository {
         `
                 INSERT INTO products (
                     name, barcode, product_code, unit_price, discountable,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    size, color, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `,
       )
       .run(
@@ -86,6 +94,8 @@ class ProductsRepository {
         product.product_code,
         product.unit_price,
         toDiscountableInt(product.discountable),
+        nullableText(product.size),
+        nullableText(product.color),
       );
     return { id: result.lastInsertRowid };
   }
@@ -96,7 +106,8 @@ class ProductsRepository {
         `
                 UPDATE products
                 SET name = ?, barcode = ?, product_code = ?,
-                    unit_price = ?, discountable = ?, updated_at = CURRENT_TIMESTAMP
+                    unit_price = ?, discountable = ?, size = ?, color = ?,
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `,
       )
@@ -106,6 +117,8 @@ class ProductsRepository {
         product.product_code,
         product.unit_price,
         toDiscountableInt(product.discountable),
+        nullableText(product.size),
+        nullableText(product.color),
         id,
       );
     return { ok: true };
@@ -130,8 +143,8 @@ class ProductsRepository {
       const stmt = this.db.prepare(`
                 INSERT INTO products (
                     name, barcode, product_code, unit_price, discountable,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    size, color, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `);
 
       const results = records.reduce(
@@ -143,6 +156,8 @@ class ProductsRepository {
               record.product_code,
               parseFloat(record.unit_price),
               toDiscountableInt(record.discountable),
+              nullableText(record.size),
+              nullableText(record.color),
             );
             return { count: results.count + 1, errors: results.errors };
           } catch (error) {
