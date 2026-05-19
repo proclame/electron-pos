@@ -34,6 +34,7 @@ function Settings() {
   const [updateStatus, setUpdateStatus] = useState('idle');
   const [updateVersion, setUpdateVersion] = useState('');
   const [downloadPercent, setDownloadPercent] = useState(0);
+  const [currentVersion, setCurrentVersion] = useState('');
 
   const handleChange = (key, value) => {
     setSettings((prev) => ({
@@ -154,6 +155,11 @@ function Settings() {
   };
 
   useEffect(() => {
+    window.electronAPI.updater
+      .getCurrentVersion()
+      .then(setCurrentVersion)
+      .catch((error) => console.error('Error fetching current version:', error));
+
     const unsubscribe = window.electronAPI.updater.onEvent((payload) => {
       switch (payload.type) {
         case 'update-available':
@@ -500,6 +506,7 @@ function Settings() {
 
         <div style={styles.section}>
           <h3>App Version</h3>
+          <div style={styles.formGroup}>Current version: {currentVersion || 'unknown'}</div>
           {(updateStatus === 'idle' || updateStatus === 'checking') && (
             <button
               type="button"

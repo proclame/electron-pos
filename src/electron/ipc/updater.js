@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+const { ipcMain, app } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const WindowManager = require('../WindowManager');
 
@@ -21,6 +21,8 @@ function registerUpdaterHandlers() {
   autoUpdater.on('error', (err) =>
     send('error', { message: err == null ? 'unknown error' : err.message || String(err) }),
   );
+
+  ipcMain.handle('updater:get-current-version', () => app.getVersion());
 
   ipcMain.handle('updater:check', async () => {
     // When the app is not packaged, electron-updater skips the check and resolves

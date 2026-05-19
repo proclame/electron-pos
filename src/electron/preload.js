@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getByBarcode: (barcode) => ipcRenderer.invoke('discounts:get-by-barcode', barcode),
   },
   updater: {
+    getCurrentVersion: () => ipcRenderer.invoke('updater:get-current-version'),
     check: () => ipcRenderer.invoke('updater:check'),
     download: () => ipcRenderer.invoke('updater:download'),
     install: () => ipcRenderer.invoke('updater:install'),
