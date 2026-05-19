@@ -12,8 +12,15 @@ function BarcodeScanner({
   const { showNotification } = useNotification();
   const [barcodeInput, setBarcodeInput] = useState('');
   const barcodeInputRef = useRef(null);
-  const audioCtx = new AudioContext();
+  const audioCtxRef = useRef(null);
   const [settings, setSettings] = useState({ barcode_sound_enabled: 'true' });
+
+  const getAudioContext = () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtxRef.current;
+  };
 
   useEffect(() => {
     // Fetch settings on component mount
@@ -27,11 +34,22 @@ function BarcodeScanner({
     };
 
     fetchSettings();
+
+    return () => {
+      audioCtxRef.current?.close();
+      audioCtxRef.current = null;
+    };
   }, []);
 
   const playSound = (herz = 440, gain = 1, length = 0.35) => {
     // Only play sound if it's enabled in settings
     if (settings.barcode_sound_enabled !== 'true') return;
+
+    const audioCtx = getAudioContext();
+    // The browser may suspend the context (autoplay policy, inactivity); resume before use.
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
 
     const oscillator = audioCtx.createOscillator();
     const volume = audioCtx.createGain();
