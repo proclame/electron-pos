@@ -185,7 +185,11 @@ function Settings() {
   const handleCheckForUpdate = async () => {
     setUpdateStatus('checking');
     try {
-      await window.electronAPI.updater.check();
+      const result = await window.electronAPI.updater.check();
+      if (result?.skipped) {
+        setUpdateStatus('idle');
+        showNotification('Updates can only be checked in the installed app, not in dev mode.', 'error');
+      }
     } catch (error) {
       console.error('Error checking for updates:', error);
       setUpdateStatus('error');

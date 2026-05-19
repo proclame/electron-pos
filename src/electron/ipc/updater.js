@@ -23,8 +23,10 @@ function registerUpdaterHandlers() {
   );
 
   ipcMain.handle('updater:check', async () => {
-    await autoUpdater.checkForUpdates();
-    return { ok: true };
+    // When the app is not packaged, electron-updater skips the check and resolves
+    // to null without emitting any event. Report that so the UI doesn't hang.
+    const result = await autoUpdater.checkForUpdates();
+    return { ok: true, skipped: result === null };
   });
 
   ipcMain.handle('updater:download', async () => {
