@@ -6,6 +6,11 @@ files:
   - '**/*'
   - '!node_modules'
 
+publish:
+  provider: github
+  owner: proclame
+  repo: electron-pos
+
 win:
   azureSignOptions:
     publisherName: 'Odin Europe BV'

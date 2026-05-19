@@ -31,8 +31,9 @@ function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [versionInfo, setVersionInfo] = useState(null);
-  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState('idle');
+  const [updateVersion, setUpdateVersion] = useState('');
+  const [downloadPercent, setDownloadPercent] = useState(0);
 
   const handleChange = (key, value) => {
     setSettings((prev) => ({
@@ -152,23 +153,61 @@ function Settings() {
     }
   };
 
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.updater.onEvent((payload) => {
+      switch (payload.type) {
+        case 'update-available':
+          setUpdateVersion(payload.data.version);
+          setUpdateStatus('available');
+          break;
+        case 'update-not-available':
+          setUpdateStatus('not-available');
+          break;
+        case 'download-progress':
+          setDownloadPercent(Math.round(payload.data.percent));
+          break;
+        case 'update-downloaded':
+          setUpdateVersion(payload.data.version);
+          setUpdateStatus('downloaded');
+          break;
+        case 'error':
+          setUpdateStatus('error');
+          showNotification(payload.data.message || 'Update error', 'error');
+          break;
+        default:
+          break;
+      }
+    });
+
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCheckForUpdate = async () => {
+    setUpdateStatus('checking');
     try {
-      setIsCheckingUpdate(true);
-      const info = await window.electronAPI.app.checkForUpdate();
-      setVersionInfo(info);
+      await window.electronAPI.updater.check();
     } catch (error) {
       console.error('Error checking for updates:', error);
+      setUpdateStatus('error');
       showNotification('Could not check for updates', 'error');
-    } finally {
-      setIsCheckingUpdate(false);
     }
   };
 
-  const handleDownloadUpdate = () => {
-    if (versionInfo?.downloadUrl) {
-      window.electronAPI.app.openExternal(versionInfo.downloadUrl);
+  const handleDownloadUpdate = async () => {
+    setDownloadPercent(0);
+    setUpdateStatus('downloading');
+    try {
+      await window.electronAPI.updater.download();
+    } catch (error) {
+      console.error('Error downloading update:', error);
+      setUpdateStatus('error');
+      showNotification('Could not download update', 'error');
     }
+  };
+
+  const handleInstallUpdate = () => {
+    window.electronAPI.updater.install();
   };
 
   return (
@@ -458,28 +497,52 @@ function Settings() {
 
         <div style={styles.section}>
           <h3>App Version</h3>
-          <button
-            type="button"
-            onClick={handleCheckForUpdate}
-            disabled={isCheckingUpdate}
-            style={isCheckingUpdate ? styles.testButtonDisabled : styles.testButton}
-          >
-            {isCheckingUpdate ? 'Checking...' : 'Check for Updates'}
-          </button>
-          {versionInfo && (
+          {(updateStatus === 'idle' || updateStatus === 'checking') && (
+            <button
+              type="button"
+              onClick={handleCheckForUpdate}
+              disabled={updateStatus === 'checking'}
+              style={updateStatus === 'checking' ? styles.testButtonDisabled : styles.testButton}
+            >
+              {updateStatus === 'checking' ? 'Checking...' : 'Check for Updates'}
+            </button>
+          )}
+
+          {updateStatus === 'not-available' && (
             <div style={styles.formGroup}>
-              <div>Current version: {versionInfo.currentVersion}</div>
-              <div>Latest version: {versionInfo.latestVersion || 'unknown'}</div>
-              {versionInfo.updateAvailable ? (
-                <div>
-                  <span>A new version is available. </span>
-                  <button type="button" onClick={handleDownloadUpdate} style={styles.button}>
-                    Download {versionInfo.latestVersion}
-                  </button>
-                </div>
-              ) : (
-                <div>You are running the latest version.</div>
-              )}
+              <div>You are running the latest version.</div>
+              <button type="button" onClick={handleCheckForUpdate} style={styles.testButton}>
+                Check Again
+              </button>
+            </div>
+          )}
+
+          {updateStatus === 'available' && (
+            <div style={styles.formGroup}>
+              <div>Version {updateVersion} is available.</div>
+              <button type="button" onClick={handleDownloadUpdate} style={styles.button}>
+                Download Update
+              </button>
+            </div>
+          )}
+
+          {updateStatus === 'downloading' && <div style={styles.formGroup}>Downloading update… {downloadPercent}%</div>}
+
+          {updateStatus === 'downloaded' && (
+            <div style={styles.formGroup}>
+              <div>Version {updateVersion} is ready. The app will close and restart to install.</div>
+              <button type="button" onClick={handleInstallUpdate} style={styles.button}>
+                Restart &amp; Install
+              </button>
+            </div>
+          )}
+
+          {updateStatus === 'error' && (
+            <div style={styles.formGroup}>
+              <div>Could not complete the update.</div>
+              <button type="button" onClick={handleCheckForUpdate} style={styles.testButton}>
+                Try Again
+              </button>
             </div>
           )}
         </div>

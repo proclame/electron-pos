@@ -47,8 +47,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getApplicable: (cartTotal) => ipcRenderer.invoke('discounts:get-applicable', cartTotal),
     getByBarcode: (barcode) => ipcRenderer.invoke('discounts:get-by-barcode', barcode),
   },
-  app: {
-    checkForUpdate: () => ipcRenderer.invoke('app:check-for-update'),
-    openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
+  updater: {
+    check: () => ipcRenderer.invoke('updater:check'),
+    download: () => ipcRenderer.invoke('updater:download'),
+    install: () => ipcRenderer.invoke('updater:install'),
+    onEvent: (callback) => {
+      const listener = (event, payload) => callback(payload);
+      ipcRenderer.on('updater:event', listener);
+      return () => ipcRenderer.removeListener('updater:event', listener);
+    },
   },
 });
