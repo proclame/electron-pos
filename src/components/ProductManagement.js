@@ -12,6 +12,7 @@ function ProductManagement() {
     unit_price: '',
     barcode: '',
     product_code: '',
+    discountable: true,
   });
   const fileInputRef = useRef(null);
   const [page, setPage] = useState(1);
@@ -62,14 +63,15 @@ function ProductManagement() {
       unit_price: product.unit_price,
       barcode: product.barcode,
       product_code: product.product_code,
+      discountable: product.discountable !== 0,
     });
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -148,7 +150,9 @@ function ProductManagement() {
       <div style={styles.importSection}>
         <h2 style={styles.importTitle}>Import Products</h2>
         <input type="file" accept=".csv" onChange={handleFileUpload} ref={fileInputRef} style={styles.fileInput} />
-        <p style={styles.importHelp}>CSV format: name,size,color,unit_price,barcode,product_code</p>
+        <p style={styles.importHelp}>
+          CSV format: name,size,color,unit_price,barcode,product_code,discountable (discountable optional)
+        </p>
       </div>
 
       <div style={styles.productList}>
@@ -219,6 +223,15 @@ function ProductManagement() {
               <div style={styles.formGroup}>
                 <label>Product Code:</label>
                 <input type="text" name="product_code" value={formData.product_code} onChange={handleChange} required />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Discountable:</label>
+                <input
+                  type="checkbox"
+                  name="discountable"
+                  checked={formData.discountable}
+                  onChange={handleChange}
+                />
               </div>
               <div style={styles.formButtons}>
                 <button type="submit" style={styles.saveButton}>

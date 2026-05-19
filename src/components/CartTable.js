@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getItemDiscountPercentage, isItemDiscountable } from '../utils/discounts';
 
 function CartTable({
   cart,
@@ -96,6 +97,7 @@ function CartTable({
   };
 
   const handleDiscountClick = (index) => {
+    if (!isItemDiscountable(cart[index])) return;
     if (suspendTimeoutRef.current) {
       clearTimeout(suspendTimeoutRef.current);
     }
@@ -143,7 +145,8 @@ function CartTable({
         <tbody>
           {cart.map((item, index) => {
             const itemTotal = item.quantity * item.product.unit_price;
-            const discountPercentage = item.discount_percentage ?? appliedDiscounts.percentage?.value ?? null;
+            const isDiscountable = isItemDiscountable(item);
+            const discountPercentage = getItemDiscountPercentage(item, appliedDiscounts);
             const discountAmount = (itemTotal * discountPercentage) / 100;
             const finalItemTotal = itemTotal - discountAmount;
 
@@ -197,7 +200,9 @@ function CartTable({
                   )}
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  {editingDiscount === index ? (
+                  {!isDiscountable ? (
+                    <span style={styles.noDiscountCell}>—</span>
+                  ) : editingDiscount === index ? (
                     <form onSubmit={handleDiscountSubmit}>
                       <input
                         type="number"
@@ -214,7 +219,7 @@ function CartTable({
                     </form>
                   ) : (
                     <div onDoubleClick={() => handleDiscountClick(index)} style={styles.clickableCell}>
-                      {discountPercentage !== null && <span style={styles.discountCell}>-{discountPercentage}%</span>}
+                      {discountPercentage > 0 && <span style={styles.discountCell}>-{discountPercentage}%</span>}
                     </div>
                   )}
                 </td>
@@ -279,6 +284,9 @@ const styles = {
     padding: '2px 6px',
     borderRadius: '4px',
     fontSize: '0.9em',
+  },
+  noDiscountCell: {
+    color: '#999',
   },
   discountedPrice: {
     color: '#28a745',

@@ -1,3 +1,14 @@
+function toDiscountableInt(value) {
+  if (value === undefined || value === null) {
+    return 1;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (normalized === '') {
+    return 1;
+  }
+  return ['0', 'false', 'no'].includes(normalized) ? 0 : 1;
+}
+
 class ProductsRepository {
   constructor(db) {
     this.db = db;
@@ -64,12 +75,18 @@ class ProductsRepository {
       .prepare(
         `
                 INSERT INTO products (
-                    name, barcode, product_code, unit_price, 
+                    name, barcode, product_code, unit_price, discountable,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `,
       )
-      .run(product.name, product.barcode, product.product_code, product.unit_price);
+      .run(
+        product.name,
+        product.barcode,
+        product.product_code,
+        product.unit_price,
+        toDiscountableInt(product.discountable),
+      );
     return { id: result.lastInsertRowid };
   }
 
@@ -77,13 +94,20 @@ class ProductsRepository {
     this.db
       .prepare(
         `
-                UPDATE products 
-                SET name = ?, barcode = ?, product_code = ?, 
-                    unit_price = ?, updated_at = CURRENT_TIMESTAMP
+                UPDATE products
+                SET name = ?, barcode = ?, product_code = ?,
+                    unit_price = ?, discountable = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `,
       )
-      .run(product.name, product.barcode, product.product_code, product.unit_price, id);
+      .run(
+        product.name,
+        product.barcode,
+        product.product_code,
+        product.unit_price,
+        toDiscountableInt(product.discountable),
+        id,
+      );
     return { ok: true };
   }
 
@@ -105,15 +129,21 @@ class ProductsRepository {
     return this.db.transact('import products', () => {
       const stmt = this.db.prepare(`
                 INSERT INTO products (
-                    name, barcode, product_code, unit_price,
+                    name, barcode, product_code, unit_price, discountable,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `);
 
       const results = records.reduce(
         (results, record) => {
           try {
-            stmt.run(record.name, record.barcode, record.product_code, parseFloat(record.unit_price));
+            stmt.run(
+              record.name,
+              record.barcode,
+              record.product_code,
+              parseFloat(record.unit_price),
+              toDiscountableInt(record.discountable),
+            );
             return { count: results.count + 1, errors: results.errors };
           } catch (error) {
             const errors = results.errors;

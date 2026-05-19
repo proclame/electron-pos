@@ -8,6 +8,7 @@ import BarcodeScanner from './BarcodeScanner';
 import SalesManager from './SalesManager';
 import { useSales } from '../contexts/SalesContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { getItemDiscountPercentage } from '../utils/discounts';
 
 function POSSystem() {
   const { currentSale, saveCurrentSale, putSaleOnHold, currentSaleId, isInitialLoad, setIsInitialLoad } = useSales();
@@ -78,16 +79,11 @@ function POSSystem() {
   };
 
   const calculateTotal = (cartItems) => {
-    return cartItems.reduce(
-      (sum, item) =>
-        sum +
-        item.product.unit_price * item.quantity -
-        (item.product.unit_price *
-          item.quantity *
-          (item.discount_percentage ?? appliedDiscounts.percentage?.value ?? 0)) /
-          100,
-      0,
-    );
+    return cartItems.reduce((sum, item) => {
+      const itemTotal = item.product.unit_price * item.quantity;
+      const discount = getItemDiscountPercentage(item, appliedDiscounts);
+      return sum + itemTotal - (itemTotal * discount) / 100;
+    }, 0);
   };
 
   // Update removeFromCart
@@ -140,7 +136,7 @@ function POSSystem() {
       // Calculate item totals with percentage discounts
       const itemsWithDiscounts = cart.map((item) => {
         const subtotal = item.quantity * item.product.unit_price;
-        const percentageDiscount = item.discount_percentage ?? appliedDiscounts.percentage?.value ?? 0;
+        const percentageDiscount = getItemDiscountPercentage(item, appliedDiscounts);
         const discountedTotal = subtotal - (subtotal * percentageDiscount) / 100;
 
         return {
