@@ -61,6 +61,12 @@
   },
   "build": {
     "appId": "com.electron.pos",
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ],
     "files": [
       "build/**/*",
       "node_modules/**/*",
