@@ -53,6 +53,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     check: () => ipcRenderer.invoke('updater:check'),
     download: () => ipcRenderer.invoke('updater:download'),
     install: () => ipcRenderer.invoke('updater:install'),
+    openReleasePage: (version) => ipcRenderer.invoke('updater:open-release', version),
     onEvent: (callback) => {
       const listener = (event, payload) => callback(payload);
       ipcRenderer.on('updater:event', listener);

@@ -1,4 +1,4 @@
-const { ipcMain, app } = require('electron');
+const { ipcMain, app, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const WindowManager = require('../WindowManager');
 
@@ -39,6 +39,15 @@ function registerUpdaterHandlers() {
   ipcMain.handle('updater:install', () => {
     // Silent install, relaunch the app afterwards.
     autoUpdater.quitAndInstall(true, true);
+    return { ok: true };
+  });
+
+  // Open the GitHub release page so the user can download the installer manually
+  // when auto-update fails. URL is built here so the renderer can't open arbitrary links.
+  ipcMain.handle('updater:open-release', (event, version) => {
+    const base = 'https://github.com/proclame/electron-pos/releases';
+    const url = version ? `${base}/tag/${encodeURIComponent(version)}` : `${base}/latest`;
+    shell.openExternal(url);
     return { ok: true };
   });
 }

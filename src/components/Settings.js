@@ -221,6 +221,10 @@ function Settings() {
     window.electronAPI.updater.install();
   };
 
+  const handleOpenReleasePage = () => {
+    window.electronAPI.updater.openReleasePage(updateVersion);
+  };
+
   return (
     <div style={styles.container}>
       <h2>Settings</h2>
@@ -567,6 +571,13 @@ function Settings() {
               <button type="button" onClick={handleDownloadUpdate} style={styles.button}>
                 Download Update
               </button>
+              <div style={{ marginTop: '8px', fontSize: '13px' }}>
+                If the update fails,{' '}
+                <button type="button" onClick={handleOpenReleasePage} style={styles.linkButton}>
+                  download it manually
+                </button>
+                .
+              </div>
             </div>
           )}
 
@@ -587,6 +598,13 @@ function Settings() {
               <button type="button" onClick={handleCheckForUpdate} style={styles.testButton}>
                 Try Again
               </button>
+              <div style={{ marginTop: '8px', fontSize: '13px' }}>
+                You can also{' '}
+                <button type="button" onClick={handleOpenReleasePage} style={styles.linkButton}>
+                  download the latest release manually
+                </button>
+                .
+              </div>
             </div>
           )}
         </div>
@@ -698,6 +716,15 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+  },
+  linkButton: {
+    padding: 0,
+    background: 'none',
+    border: 'none',
+    color: '#007bff',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    fontSize: 'inherit',
   },
   testButtonDisabled: {
     marginLeft: '10px',
