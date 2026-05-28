@@ -5,6 +5,7 @@ function SalesHistory() {
   const [activeTab, setActiveTab] = useState('sales'); // 'sales' or 'products'
   const [sales, setSales] = useState([]);
   const [productSales, setProductSales] = useState([]);
+  const [dailySales, setDailySales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -18,8 +19,10 @@ function SalesHistory() {
   useEffect(() => {
     if (activeTab === 'sales') {
       loadSales();
-    } else {
+    } else if (activeTab === 'products') {
       loadProductSales();
+    } else {
+      loadDailySales();
     }
   }, [currentPage, dateFilter, activeTab]);
 
@@ -55,6 +58,22 @@ function SalesHistory() {
       setProductSales(response);
     } catch (error) {
       console.error('Error loading product sales:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadDailySales = async () => {
+    try {
+      const queryParams = {
+        startDate: dateFilter.startDate,
+        endDate: dateFilter.endDate,
+      };
+
+      const response = await window.electronAPI.sales.getSalesByDay(queryParams);
+      setDailySales(response);
+    } catch (error) {
+      console.error('Error loading daily sales:', error);
     } finally {
       setLoading(false);
     }
@@ -118,6 +137,15 @@ function SalesHistory() {
         >
           Sales by Product
         </button>
+        <button
+          style={{
+            ...styles.tabButton,
+            ...(activeTab === 'days' ? styles.activeTab : {}),
+          }}
+          onClick={() => setActiveTab('days')}
+        >
+          Sales by Day
+        </button>
       </div>
 
       <div style={styles.filters}>
@@ -138,7 +166,7 @@ function SalesHistory() {
         />
       </div>
 
-      {activeTab === 'sales' ? (
+      {activeTab === 'sales' && (
         <table style={styles.table}>
           <thead>
             <tr>
@@ -169,7 +197,9 @@ function SalesHistory() {
             ))}
           </tbody>
         </table>
-      ) : (
+      )}
+
+      {activeTab === 'products' && (
         <table style={styles.table}>
           <thead>
             <tr>
@@ -186,6 +216,27 @@ function SalesHistory() {
                 <td>{product.product_name}</td>
                 <td style={{ textAlign: 'center' }}>{product.total_quantity}</td>
                 <td style={{ textAlign: 'right', paddingRight: '20px' }}>€{product.total_revenue.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {activeTab === 'days' && (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th style={{ textAlign: 'center' }}>Sales</th>
+              <th style={{ textAlign: 'right', paddingRight: '20px' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dailySales.map((day) => (
+              <tr key={day.day}>
+                <td>{day.day}</td>
+                <td style={{ textAlign: 'center' }}>{day.sales_count}</td>
+                <td style={{ textAlign: 'right', paddingRight: '20px' }}>€{day.total.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

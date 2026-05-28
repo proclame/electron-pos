@@ -91,6 +91,29 @@ class SalesRepository {
     return this.db.prepare(query).all(...params);
   }
 
+  getSalesByDay({ startDate = '', endDate = '' }) {
+    let whereClause = '';
+    let params = [];
+
+    if (startDate && endDate) {
+      whereClause = 'WHERE s.created_at BETWEEN ? AND ?';
+      params = [startDate, endDate + ' 23:59:59'];
+    }
+
+    const query = `
+            SELECT
+                date(s.created_at) as day,
+                COUNT(*) as sales_count,
+                SUM(s.total) as total
+            FROM sales s
+            ${whereClause}
+            GROUP BY date(s.created_at)
+            ORDER BY day DESC
+        `;
+
+    return this.db.prepare(query).all(...params);
+  }
+
   getSale(id) {
     const sale = this.db
       .prepare(

@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateSale: (id, updates) => ipcRenderer.invoke('sales:update-sale', { id, updates }),
     getSales: (params) => ipcRenderer.invoke('sales:get-sales', params),
     getSalesByProduct: (params) => ipcRenderer.invoke('sales:get-sales-by-product', params),
+    getSalesByDay: (params) => ipcRenderer.invoke('sales:get-sales-by-day', params),
   },
   email: {
     sendReceipt: (sale, email) => ipcRenderer.invoke('email:send-receipt', sale, email),

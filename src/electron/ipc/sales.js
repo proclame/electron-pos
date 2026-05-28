@@ -51,6 +51,16 @@ function registerSalesHandlers() {
       throw error;
     }
   });
+
+  // Get sales totals by day
+  ipcMain.handle('sales:get-sales-by-day', async (event, params) => {
+    try {
+      return salesRepo.getSalesByDay(params);
+    } catch (error) {
+      console.error('Error fetching daily sales:', error);
+      throw error;
+    }
+  });
 }
 
 module.exports = registerSalesHandlers;
