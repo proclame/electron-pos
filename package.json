@@ -71,7 +71,7 @@
       }
     ],
     "win": {
-      "publisherName": "Odin Europe BV"
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "artifactName": "${name}-Setup-${version}.${ext}"
